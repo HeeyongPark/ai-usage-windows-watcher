@@ -1,8 +1,8 @@
 version: 1
 projects:
   ai-usage-windows-watcher:
-    notion_source: ""
-    notes: "TODO: set Notion source URL"
+    notion_source: "https://www.notion.so/mirador/30be497bcfdf807a877bdccfbdcbd8c4?source=copy_link"
+    notes: "Primary Big Picture source page"
 default:
-  notion_source: ""
-  notes: "Fallback source"
+  notion_source: "https://www.notion.so/mirador/30be497bcfdf807a877bdccfbdcbd8c4?source=copy_link"
+  notes: "Fallback source (same as project default)"

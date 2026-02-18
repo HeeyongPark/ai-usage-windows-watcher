@@ -214,3 +214,39 @@
 ### 다음 핸드오프
 - To Review:
   - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+
+## Coding Update (2026-02-18 22:57)
+- from_task:
+  - phase1-windows-runtime-smoke
+- scope_update:
+  - Windows 실기기 스모크 검증 표준화
+- 구현 전략:
+  - 수동 체크리스트/증적 템플릿을 저장소 표준으로 추가
+  - PowerShell 런타임 프로브 스크립트로 환경 증적 수집 자동화
+  - Windows 운영 가이드에 스모크 게이트 절차를 반영
+
+### 변경 파일
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/windows_runtime_probe.ps1
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-smoke-checklist.md
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-evidence-template.md
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/WINDOWS_USAGE.md
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/README.md
+
+### 구현 요약
+- Win10/Win11 공통 필수 시나리오 6개를 체크리스트로 고정했다.
+- `windows_runtime_probe.ps1`로 OS/Python/해상도/저장 경로 정보를 JSON으로 추출 가능하게 했다.
+- 운영 문서에 Gate A/B/C 실행 절차와 증적 경로를 반영했다.
+
+### 검증 증적
+- 실행 커맨드:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q`
+  - `python3 -m py_compile /Users/mirador/Documents/ai-usage-windows-watcher/agent/src/*.py /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/*.py /Users/mirador/Documents/ai-usage-windows-watcher/agent/tests/*.py /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/*.py`
+- 결과:
+  - `9 passed`
+  - py_compile 오류 없음
+- 제한:
+  - PowerShell 스크립트의 실기기 실행 검증은 Windows 머신에서 수행 필요
+
+### 다음 핸드오프
+- To Review:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md

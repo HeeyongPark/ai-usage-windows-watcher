@@ -24,6 +24,14 @@ python src/app.py
 ## Windows quick start
 - See `/Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/WINDOWS_USAGE.md`
 
+## Windows runtime smoke artifacts
+- Runtime probe script:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/windows_runtime_probe.ps1`
+- Manual checklist:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-smoke-checklist.md`
+- Evidence template:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-evidence-template.md`
+
 ## OAuth config
 Create `.env` from `.env.example` before launching.
 `src/app.py` auto-loads `desktop_win/.env`.

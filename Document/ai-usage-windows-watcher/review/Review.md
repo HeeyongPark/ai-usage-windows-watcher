@@ -211,3 +211,70 @@
   - 결과: `9 passed in 0.09s`
 - 상태 정리:
   - 기존 조건부 pass의 테스트 실행 제약을 해소했고 Integration Test (Pre)로 전이 가능 상태를 확인했다.
+
+## Review Request (2026-02-18 22:59)
+- 대상 태스크:
+  - phase1-windows-runtime-smoke
+- 검토 범위:
+  - 실기기 스모크 체크리스트/증적 템플릿 신규 추가
+  - Windows 런타임 프로브 스크립트(PowerShell) 추가
+  - Windows 운영 가이드의 Gate A/B/C 반영
+- 핵심 파일:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/windows_runtime_probe.ps1
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-smoke-checklist.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/WINDOWS_USAGE.md
+
+## Review Result (2026-02-18 23:00) - phase1-windows-runtime-smoke
+
+### 검토 범위
+- Planning/Coding 산출물 정합성
+- 수동 스모크 템플릿의 실행 가능성
+- 자동 테스트 증적 최신화 여부
+
+### 문서 비교 결과
+- Planning -> Coding 누락 항목:
+  - 없음(체크리스트/증적 템플릿/PowerShell 프로브/운영 가이드 반영 확인)
+- Coding -> Planning 역추적 불가 항목:
+  - 없음
+
+### 보수 검토 체크리스트
+- AC 충족 여부:
+  - 충족(계획된 산출물 파일이 모두 생성됨)
+- 성능/리소스 병목 가능성:
+  - 낮음(문서/스크립트 중심 변경)
+- 오류 처리/예외 케이스 누락:
+  - 낮음(스크립트에서 python/해상도 조회 실패 시 fallback 처리)
+- 테스트 전략의 빈틈:
+  - 있음(실기기에서 `windows_runtime_probe.ps1` 실제 실행 증적은 아직 없음)
+- 기술 부채 또는 과설계 위험:
+  - 낮음
+- 배포 준비 상태:
+  - 프로젝트 규칙상 Git Release 이전 단계 기준 문제 없음
+
+### 발견 사항
+- 결함(Blocking): 0건
+- 확인 증적:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q`
+  - 결과: `9 passed`
+  - `python3 -m py_compile ...` 오류 없음
+
+### 리스크/우려
+- 실기기 증적 수집은 Windows 환경에서 최종 수행해야 하므로 현재 단계에서는 문서/자동 검증 중심 판정이다.
+
+### 되돌림 가이드
+- Planning으로 되돌릴 항목:
+  - 없음
+- Coding으로 되돌릴 항목:
+  - 없음
+
+### 배포 게이트 판정
+- Integration Test 진행 가능:
+  - 가능(조건부)
+- 선행 보완 필요 항목:
+  - Win10/Win11 각 1회 체크리스트 실행 결과 첨부
+
+### 결정/후속 조치
+- Review 판정:
+  - pass (조건부)
+- 다음 단계:
+  - Integration Test (Pre)

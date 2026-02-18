@@ -78,3 +78,21 @@ python .\src\app.py
 - OAuth 토큰: `%APPDATA%\AIUsageWatcher\oauth_token.json`
 - 사용량 DB 기본 경로: `%USERPROFILE%\.ai-usage-watcher\usage.db`
 - DB 경로 변경 시 `AUIW_DB_PATH` 환경변수 사용
+
+## 11) Windows 실기기 스모크 검증(권장)
+1. 런타임 정보 수집
+PowerShell:
+```powershell
+cd .\desktop_win\
+powershell -ExecutionPolicy Bypass -File .\scripts\windows_runtime_probe.ps1 -OutputPath .\tests\manual\artifacts\runtime-context-win11-devbox.json
+```
+2. 체크리스트 수행
+- `desktop_win\tests\manual\windows-runtime-smoke-checklist.md`의 6개 필수 시나리오를 순서대로 점검
+3. 증적 정리
+- 템플릿: `desktop_win\tests\manual\windows-runtime-evidence-template.md`
+- 실패 시 스크린샷/로그 경로를 반드시 기록
+
+## 12) Phase 1 게이트 기준
+- Gate A: 자동 테스트(`agent\.venv\Scripts\python -m pytest -q`) 통과
+- Gate B: Win10/Win11 실기기 스모크 각 1회 이상 수행
+- Gate C: 실패 케이스(OAuth 설정 누락/DB 경로 변경/갱신 주기 최소값) 증적 확보

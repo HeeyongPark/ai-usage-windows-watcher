@@ -20,16 +20,24 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - Review 통과 + Integration Test (Pre) 통과 + Git Release 완료 시 `done` 처리
 
 ## Active Queue
-1. [done] phase1-win-agent-usage-collector :: Windows 사용량 수집기 에이전트 MVP
-2. [done] phase1-desktop-dashboard :: 로컬 대시보드 MVP
-3. [done] phase1-budget-alert-rule :: 예산 임계치 알림 규칙
+1. [integration_test_pre] phase1-windows-runtime-smoke :: Windows 실기기 스모크 검증
+2. [queued] phase1-test-harness-expansion :: 테스트 하네스 확장
+3. [queued] phase1-oauth-live-provider-smoke :: OAuth 실공급자 스모크
+4. [queued] phase1-release-readiness-windows :: 신규 Windows 머신 재현 설치 검증
+5. [done] phase1-win-agent-usage-collector :: Windows 사용량 수집기 에이전트 MVP
+6. [done] phase1-desktop-dashboard :: 로컬 대시보드 MVP
+7. [done] phase1-budget-alert-rule :: 예산 임계치 알림 규칙
 
 ## Stage Board (Latest)
 - queued:
+  - phase1-test-harness-expansion
+  - phase1-oauth-live-provider-smoke
+  - phase1-release-readiness-windows
 - planning:
 - coding:
 - review:
 - integration_test_pre:
+  - phase1-windows-runtime-smoke
 - git_release:
 - deploy:
 - integration_test_post:
@@ -51,7 +59,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 
 ### 사용자 확인 게이트
 - 핵심 내용:
-  - AI 도구 사용량을 확인하는 완전 신규 프로젝트를 PodoNote 파이프라인으로 시작한다.
+  - AI 도구 사용량을 확인하는 완전 신규 프로젝트를 표준 파이프라인으로 시작한다.
 - 방향:
   - Windows MVP를 먼저 만들고, 첫 태스크는 사용량 수집기 에이전트로 고정한다.
 - 고민거리:
@@ -84,7 +92,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 다음 단계:
   - Planning (single task)
 - 담당 스킬:
-  - podonote-planning
+  - planning
 
 ## Cycle 2 (2026-02-18 16:20)
 
@@ -122,7 +130,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 다음 단계:
   - Review
 - 담당 스킬:
-  - podonote-review
+  - review
 
 ## Cycle 19 (2026-02-18 22:44)
 
@@ -158,7 +166,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 다음 단계:
   - closed
 - 담당 스킬:
-  - podonote-cycle-manager
+  - cycle-manager
 
 ## Cycle 20 (2026-02-18 22:44)
 
@@ -194,7 +202,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 다음 단계:
   - closed
 - 담당 스킬:
-  - podonote-cycle-manager
+  - cycle-manager
 
 ## Cycle 21 (2026-02-18 22:44)
 
@@ -230,7 +238,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 다음 단계:
   - closed
 - 담당 스킬:
-  - podonote-cycle-manager
+  - cycle-manager
 
 ## Cycle 16 (2026-02-18 22:37)
 
@@ -266,7 +274,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 다음 단계:
   - terminal_stage reached (`git_release`)
 - 담당 스킬:
-  - podonote-cycle-manager
+  - cycle-manager
 
 ## Cycle 17 (2026-02-18 22:37)
 
@@ -302,7 +310,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 다음 단계:
   - terminal_stage reached (`git_release`)
 - 담당 스킬:
-  - podonote-cycle-manager
+  - cycle-manager
 
 ## Cycle 18 (2026-02-18 22:37)
 
@@ -338,7 +346,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 다음 단계:
   - terminal_stage reached (`git_release`)
 - 담당 스킬:
-  - podonote-cycle-manager
+  - cycle-manager
 
 ## Cycle 13 (2026-02-18 22:37)
 
@@ -374,7 +382,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 다음 단계:
   - Git Release
 - 담당 스킬:
-  - podonote-git-release
+  - git-release
 
 ## Cycle 14 (2026-02-18 22:37)
 
@@ -410,7 +418,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 다음 단계:
   - Git Release
 - 담당 스킬:
-  - podonote-git-release
+  - git-release
 
 ## Cycle 15 (2026-02-18 22:37)
 
@@ -446,7 +454,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 다음 단계:
   - Git Release
 - 담당 스킬:
-  - podonote-git-release
+  - git-release
 
 ## Cycle 6 (2026-02-18 21:40)
 
@@ -526,7 +534,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 다음 단계:
   - Coding
 - 담당 스킬:
-  - podonote-coding
+  - coding
 
 ## Cycle 8 (2026-02-18 21:44)
 
@@ -562,7 +570,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 다음 단계:
   - Review
 - 담당 스킬:
-  - podonote-review
+  - review
 
 ## Cycle 9 (2026-02-18 21:45)
 
@@ -642,7 +650,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 다음 단계:
   - Coding
 - 담당 스킬:
-  - podonote-coding
+  - coding
 
 ## Cycle 11 (2026-02-18 21:47)
 
@@ -678,7 +686,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 다음 단계:
   - Review
 - 담당 스킬:
-  - podonote-review
+  - review
 
 ## Cycle 12 (2026-02-18 21:48)
 
@@ -752,7 +760,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 다음 단계:
   - Review
 - 담당 스킬:
-  - podonote-review
+  - review
 
 ## Cycle 4 (2026-02-18 16:31)
 
@@ -789,7 +797,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 다음 단계:
   - Review
 - 담당 스킬:
-  - podonote-review
+  - review
 
 ## Cycle 5 (2026-02-18 16:33)
 
@@ -825,4 +833,161 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 다음 단계:
   - Review
 - 담당 스킬:
-  - podonote-review
+  - review
+
+## Cycle 22 (2026-02-18 22:57)
+
+### 입력
+- Big Picture 소스:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/big-picture/BigPicture.md
+- 선택 태스크:
+  - phase1-windows-runtime-smoke
+- 이전 사이클 carry-over:
+  - phase1-test-harness-expansion
+  - phase1-oauth-live-provider-smoke
+  - phase1-release-readiness-windows
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 기능 구현 완료 이후 Windows 실기기 검증 증적을 우선 확보한다.
+- 방향:
+  - queued 최상위 태스크를 planning으로 승격하고 실기기 체크리스트 기반 계획을 작성한다.
+- 고민거리:
+  - OAuth 실공급자 테스트 계정 준비 여부에 따른 부분 블로킹 가능성
+
+### 상태 전이
+- before:
+  - phase1-windows-runtime-smoke: queued
+- after:
+  - phase1-windows-runtime-smoke: planning
+- 전이 이유:
+  - Big Picture 최신 스냅샷의 최우선 후보를 단일 Planning 대상으로 확정했다.
+
+### Handoff To Planning (단일 태스크)
+- task-id:
+  - phase1-windows-runtime-smoke
+- 입력:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/cycle-manager/Cycle.md
+- 출력:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-runtime-smoke.md
+
+### 리스크 및 블로커
+- 리스크:
+  - 실기기 테스트가 수동 중심이라 증적 포맷이 흔들릴 수 있음
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Planning (single task)
+- 담당 스킬:
+  - planning
+
+## Cycle 23 (2026-02-18 22:59)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-runtime-smoke
+- Planning 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-runtime-smoke.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - Planning 산출물을 기반으로 Windows 실기기 검증 실행 기반(체크리스트/프로브/가이드)을 구현한다.
+- 방향:
+  - 문서 템플릿 + PowerShell 스크립트 + 운영 가이드 업데이트를 같은 사이클에서 완료한다.
+- 고민거리:
+  - PowerShell 스크립트의 실제 실행 검증은 Windows 머신에서 별도 수행 필요
+
+### 상태 전이
+- before:
+  - phase1-windows-runtime-smoke: planning
+- after:
+  - phase1-windows-runtime-smoke: coding
+- 전이 이유:
+  - Planning DoD를 구현 단위로 분해해 실제 산출물 파일 생성과 자동 테스트 검증을 완료했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - 실기기 실행 증적이 아직 미수집이면 Review에서 조건부 판정 가능
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Review
+- 담당 스킬:
+  - review
+
+## Cycle 24 (2026-02-18 23:00)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-runtime-smoke
+- Review 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - Planning 대비 Coding 누락/회귀 여부를 검토해 다음 단계 진행 가능성을 판정한다.
+- 방향:
+  - 결함 0건이면 Integration Test (Pre)로 전이 준비를 진행한다.
+- 고민거리:
+  - Windows 실기기 증적은 다음 단계에서 실제 수집해야 한다.
+
+### 상태 전이
+- before:
+  - phase1-windows-runtime-smoke: coding
+- after:
+  - phase1-windows-runtime-smoke: review
+- 전이 이유:
+  - 문서/스크립트/가이드 변경이 Planning 요구사항과 정합하며 blocking 결함이 없음을 확인했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - Win10/Win11 실기기 증적 미확보 시 Integration Test 결과가 조건부가 될 수 있음
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Integration Test (Pre)
+- 담당 스킬:
+  - integration-test-pre
+
+## Cycle 25 (2026-02-18 23:14)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-runtime-smoke
+- Integration Test 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/integration-test/IntegrationTest.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - `ui_required` 프로파일로 pre-deploy 통합 게이트를 실행해 Git Release 진행 가능 여부를 판정한다.
+- 방향:
+  - 자동 테스트는 즉시 실행하고, 실기기 UI 증적 누락 여부를 명시적으로 게이트에 반영한다.
+- 고민거리:
+  - Windows 실기기 접근 가능 시점 전까지는 동일 단계 재실행이 필요하다.
+
+### 상태 전이
+- before:
+  - phase1-windows-runtime-smoke: review
+- after:
+  - phase1-windows-runtime-smoke: integration_test_pre
+- 전이 이유:
+  - Pre-Deploy 통합 검증을 수행했고, 자동 테스트는 통과했으나 `ui_required` 필수 실기기 증적 미완료로 fail 판정을 기록했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - 실기기 증적이 누락된 상태로는 git_release 진입 불가
+- 블로커:
+  - Win10/Win11 각 1회 체크리스트 실행 결과 미첨부
+  - `windows_runtime_probe.ps1` 실행 산출물(JSON) 미첨부
+
+### 다음 액션
+- 다음 단계:
+  - Integration Test (Pre) 재실행
+- 담당 스킬:
+  - integration-test-pre

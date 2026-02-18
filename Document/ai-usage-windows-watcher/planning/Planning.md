@@ -4,6 +4,7 @@
 - ai-usage-windows-watcher
 
 ## Active Tasks
+- [phase1-windows-runtime-smoke](./tasks/phase1-windows-runtime-smoke.md)
 - [phase1-win-agent-usage-collector](./tasks/phase1-win-agent-usage-collector.md)
 - [phase1-desktop-dashboard](./tasks/phase1-desktop-dashboard.md)
 - [phase1-budget-alert-rule](./tasks/phase1-budget-alert-rule.md)
