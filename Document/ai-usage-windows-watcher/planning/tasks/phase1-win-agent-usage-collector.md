@@ -14,9 +14,9 @@
 
 ## 입력
 - Big Picture 소스:
-  - /Users/mirador/Documents/PodoNoteProject/Document/PodoNote/ai-usage-windows-watcher/podonote-big-picture/BigPicture.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/big-picture/BigPicture.md
 - Cycle 소스:
-  - /Users/mirador/Documents/PodoNoteProject/Document/PodoNote/ai-usage-windows-watcher/podonote-cycle-manager/Cycle.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/cycle-manager/Cycle.md
 - Notion 소스:
   - https://www.notion.so/mirador/30be497bcfdf807a877bdccfbdcbd8c4?source=copy_link
 - 태스크 요약:
@@ -96,11 +96,11 @@
 
 ## Handoff
 - To Coding:
-  - /Users/mirador/Documents/PodoNoteProject/Document/PodoNote/ai-usage-windows-watcher/podonote-coding/Coding.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/coding/Coding.md
 - To Integration Test (조건부):
-  - /Users/mirador/Documents/PodoNoteProject/Document/PodoNote/ai-usage-windows-watcher/podonote-integration-test/IntegrationTest.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/integration-test/IntegrationTest.md
 - To Cycle Manager (조건부):
-  - /Users/mirador/Documents/PodoNoteProject/Document/PodoNote/ai-usage-windows-watcher/podonote-cycle-manager/Cycle.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/cycle-manager/Cycle.md
 
 ## Planning Update (2026-02-18 16:30)
 - 사용자 추가 요구:

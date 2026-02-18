@@ -7,7 +7,7 @@
 - from_task:
   - phase1-win-agent-usage-collector
 - source:
-  - /Users/mirador/Documents/PodoNoteProject/Document/PodoNote/ai-usage-windows-watcher/podonote-planning/tasks/phase1-win-agent-usage-collector.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-win-agent-usage-collector.md
 - status:
   - in_progress
 
@@ -45,7 +45,7 @@
 
 ### 다음 핸드오프
 - To Review:
-  - /Users/mirador/Documents/PodoNoteProject/Document/PodoNote/ai-usage-windows-watcher/podonote-review/Review.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
 
 ## Coding Update (2026-02-18 16:31)
 - scope_update:
@@ -78,7 +78,7 @@
 
 ### 다음 핸드오프
 - To Review:
-  - /Users/mirador/Documents/PodoNoteProject/Document/PodoNote/ai-usage-windows-watcher/podonote-review/Review.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
 
 ## Coding Update (2026-02-18 16:33)
 - scope_update:
@@ -109,7 +109,7 @@
 
 ### 다음 핸드오프
 - To Review:
-  - /Users/mirador/Documents/PodoNoteProject/Document/PodoNote/ai-usage-windows-watcher/podonote-review/Review.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
 
 ## Coding Update (2026-02-18 16:32)
 - scope_update:
@@ -144,4 +144,4 @@
 
 ### 다음 핸드오프
 - To Review:
-  - /Users/mirador/Documents/PodoNoteProject/Document/PodoNote/ai-usage-windows-watcher/podonote-review/Review.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md

@@ -35,7 +35,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 
 ### 입력
 - Big Picture 소스:
-  - /Users/mirador/Documents/PodoNoteProject/Document/PodoNote/ai-usage-windows-watcher/podonote-big-picture/BigPicture.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/big-picture/BigPicture.md
 - Notion 소스:
   - https://www.notion.so/mirador/30be497bcfdf807a877bdccfbdcbd8c4?source=copy_link
 - 이전 사이클 carry-over:
@@ -62,9 +62,9 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - task-id:
   - phase1-win-agent-usage-collector
 - 입력:
-  - /Users/mirador/Documents/PodoNoteProject/Document/PodoNote/ai-usage-windows-watcher/podonote-cycle-manager/Cycle.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/cycle-manager/Cycle.md
 - 출력:
-  - /Users/mirador/Documents/PodoNoteProject/Document/PodoNote/ai-usage-windows-watcher/podonote-planning/tasks/phase1-win-agent-usage-collector.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-win-agent-usage-collector.md
 
 ### 리스크 및 블로커
 - 리스크:
