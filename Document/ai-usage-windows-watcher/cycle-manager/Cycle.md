@@ -20,9 +20,9 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - Review 통과 + Integration Test (Pre) 통과 + Git Release 완료 시 `done` 처리
 
 ## Active Queue
-1. [integration_test_pre] phase1-win-agent-usage-collector :: Windows 사용량 수집기 에이전트 MVP
-2. [integration_test_pre] phase1-desktop-dashboard :: 로컬 대시보드 MVP
-3. [integration_test_pre] phase1-budget-alert-rule :: 예산 임계치 알림 규칙
+1. [git_release] phase1-win-agent-usage-collector :: Windows 사용량 수집기 에이전트 MVP
+2. [git_release] phase1-desktop-dashboard :: 로컬 대시보드 MVP
+3. [git_release] phase1-budget-alert-rule :: 예산 임계치 알림 규칙
 
 ## Stage Board (Latest)
 - queued:
@@ -30,10 +30,10 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - coding:
 - review:
 - integration_test_pre:
+- git_release:
   - phase1-win-agent-usage-collector
   - phase1-desktop-dashboard
   - phase1-budget-alert-rule
-- git_release:
 - deploy:
 - integration_test_post:
 - done:
@@ -123,6 +123,114 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - Review
 - 담당 스킬:
   - podonote-review
+
+## Cycle 16 (2026-02-18 22:37)
+
+### 입력
+- 선택 태스크:
+  - phase1-win-agent-usage-collector
+- Git Release 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/git-release/GitRelease.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - pre-deploy 통과 태스크를 git release 단계로 전이한다.
+- 방향:
+  - 검증된 변경만 commit/tag/push 기준선으로 확정한다.
+- 고민거리:
+  - 없음
+
+### 상태 전이
+- before:
+  - phase1-win-agent-usage-collector: integration_test_pre
+- after:
+  - phase1-win-agent-usage-collector: git_release
+- 전이 이유:
+  - 릴리즈 커밋(`88fd6e9`)과 태그(`v0.1.1-phase1`)가 원격에 반영되었다.
+
+### 리스크 및 블로커
+- 리스크:
+  - 없음
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - terminal_stage reached (`git_release`)
+- 담당 스킬:
+  - podonote-cycle-manager
+
+## Cycle 17 (2026-02-18 22:37)
+
+### 입력
+- 선택 태스크:
+  - phase1-desktop-dashboard
+- Git Release 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/git-release/GitRelease.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 대시보드 태스크를 git release 단계로 전이한다.
+- 방향:
+  - 동일 릴리즈 기준선으로 파이프라인 상태를 동기화한다.
+- 고민거리:
+  - 없음
+
+### 상태 전이
+- before:
+  - phase1-desktop-dashboard: integration_test_pre
+- after:
+  - phase1-desktop-dashboard: git_release
+- 전이 이유:
+  - 통합 테스트 통과 후 동일 릴리즈 커밋 기준으로 전이했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - 없음
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - terminal_stage reached (`git_release`)
+- 담당 스킬:
+  - podonote-cycle-manager
+
+## Cycle 18 (2026-02-18 22:37)
+
+### 입력
+- 선택 태스크:
+  - phase1-budget-alert-rule
+- Git Release 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/git-release/GitRelease.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 예산 규칙 태스크를 git release 단계로 전이한다.
+- 방향:
+  - project override에 맞춰 Deploy 없이 릴리즈 기준선까지 확정한다.
+- 고민거리:
+  - 없음
+
+### 상태 전이
+- before:
+  - phase1-budget-alert-rule: integration_test_pre
+- after:
+  - phase1-budget-alert-rule: git_release
+- 전이 이유:
+  - 릴리즈 기준선 확정으로 다음 파이프라인 처리 대기 상태가 되었다.
+
+### 리스크 및 블로커
+- 리스크:
+  - 없음
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - terminal_stage reached (`git_release`)
+- 담당 스킬:
+  - podonote-cycle-manager
 
 ## Cycle 13 (2026-02-18 22:37)
 
