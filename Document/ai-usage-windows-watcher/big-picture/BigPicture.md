@@ -55,23 +55,18 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 
 ## Planning Input Snapshot (Latest)
 - 이번 루프 핵심 내용:
-  - Phase 1 첫 태스크에서 OAuth 요구를 `GPT(ChatGPT) 로그인`으로 명확히 재정의하고 Planning을 갱신한다.
+  - 프로젝트 초기화 후 Phase 1 첫 태스크(사용량 수집기 MVP) Planning 문서를 확정한다.
 - 이번 사이클 방향:
-  - provider-generic 설명에서 벗어나 GPT OAuth를 1차 기준으로 명시해 구현/테스트/문서 기준을 통일한다.
+  - 로컬 우선 수집, 최소 권한, 재현 가능한 설치/실행 절차를 우선한다.
 - 고민거리:
-  - GPT OAuth 앱 등록 정보(client id/redirect) 관리 방식
-  - GPT OAuth 실패(권한 거부/타임아웃) 시 사용자 안내 표준화
-  - 향후 다른 공급자 확장 시 GPT 우선 정책과의 충돌 방지
+  - 수집 가능한 신뢰 지표(세션 시간/요청 수/토큰 추정치) 범위 확정
 - 고정 제약:
   - Windows 우선, 개인정보 최소 수집, 오프라인 우선 동작
 - 성공 기준:
-  - Big Picture/Cycle/Planning 문서가 모두 "OAuth = GPT 로그인"으로 정합성을 갖는다.
+  - Cycle/Planning 문서가 생성되고 첫 실행 태스크가 `planning` 상태로 진입한다.
 - Planning/Cycle 입력 하위 문서:
   - ./phases/Phase-1.md
-  - ./podonote-cycle-manager/Cycle.md
-  - ./podonote-planning/tasks/phase1-win-agent-usage-collector.md
   - ./overview/modules/01-collection-policy.md
-  - ./podonote-review/Review.md
   - https://www.notion.so/mirador/30be497bcfdf807a877bdccfbdcbd8c4?source=copy_link
 
 ## Cycle History
@@ -95,25 +90,3 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - 추정 기반 지표(`token_estimate`) 정의가 실제 구현 단계에서 변경될 수 있음
 - 다음 Cycle 전달사항:
   - `phase1-win-agent-usage-collector` Coding 진입 전 지표 수집 정밀도 기준을 확정한다.
-
-### Cycle 3 (2026-02-18 17:29)
-- 이번 변경:
-  - Big Picture를 Coding 완료 + Review 진행 상태 기준으로 업데이트했다.
-  - Review에서 OAuth 토큰 파일 파손 복원 미흡, 자동 갱신 오류 시 루프 중단 리스크를 확인했다.
-- 방향 변경:
-  - Integration Test (Pre) 진입 전에 Coding 보완(복원/재시도 안정성)을 우선한다.
-- 새 리스크:
-  - 샘플 이벤트 기반 수집기 상태가 길어지면 Windows 실제 프로세스 감지 정확도 검증이 지연될 수 있음
-- 다음 Cycle 전달사항:
-  - `phase1-win-agent-usage-collector`를 Coding으로 되돌려 보완 후 Review를 재실행한다.
-
-### Cycle 4 (2026-02-18 18:14)
-- 이번 변경:
-  - 사용자 요구를 반영해 OAuth 의미를 "GPT(ChatGPT) 로그인"으로 확정했다.
-  - Big Picture 기준 문구를 공급자 일반론에서 GPT 우선 명세로 갱신했다.
-- 방향 변경:
-  - 인증 구현/문서/테스트의 기준 공급자를 GPT로 고정하고, 확장은 후속으로 분리한다.
-- 새 리스크:
-  - GPT OAuth 정책/앱 등록 값 변경 시 초기 설정 실패 가능성
-- 다음 Cycle 전달사항:
-  - Cycle Manager에서 태스크를 planning으로 재진입시키고, Planning에 GPT OAuth 세부 AC를 추가한다.

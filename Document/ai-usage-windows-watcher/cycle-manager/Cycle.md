@@ -12,7 +12,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - Big Picture -> Cycle Manager -> Planning -> Coding -> Review -> Integration Test (Pre) -> Git Release -> Deploy -> Integration Test (Post)
 
 ## Active Queue
-1. [planning] phase1-win-agent-usage-collector :: Windows 사용량 수집기 에이전트 MVP (GPT OAuth 명세 반영)
+1. [coding] phase1-win-agent-usage-collector :: Windows 사용량 수집기 에이전트 MVP
 2. [queued] phase1-desktop-dashboard :: 로컬 대시보드 MVP
 3. [queued] phase1-budget-alert-rule :: 예산 임계치 알림 규칙
 
@@ -21,8 +21,8 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - phase1-desktop-dashboard
   - phase1-budget-alert-rule
 - planning:
-  - phase1-win-agent-usage-collector
 - coding:
+  - phase1-win-agent-usage-collector
 - review:
 - integration_test_pre:
 - git_release:
@@ -226,39 +226,3 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - Review
 - 담당 스킬:
   - podonote-review
-
-## Cycle 6 (2026-02-18 18:14)
-
-### 입력
-- 선택 태스크:
-  - phase1-win-agent-usage-collector
-- 사용자 명확화 요구:
-  - Planning에서 말한 OAuth는 일반 OAuth가 아니라 GPT(ChatGPT) 로그인 의미
-
-### 사용자 확인 게이트
-- 핵심 내용:
-  - 인증 요구사항을 "GPT OAuth 로그인"으로 명시해 구현/문서/테스트 기준을 통일한다.
-- 방향:
-  - 현재 태스크를 planning으로 재진입시켜 GPT OAuth 기준 AC/리스크/핸드오프를 갱신한다.
-- 고민거리:
-  - GPT OAuth 앱 등록값(redirect/client) 운영 관리 방식
-
-### 상태 전이
-- before:
-  - phase1-win-agent-usage-collector: coding
-- after:
-  - phase1-win-agent-usage-collector: planning
-- 전이 이유:
-  - 인증 요구의 의미가 구체화되어 Planning 문서 재정의가 선행되어야 한다.
-
-### 리스크 및 블로커
-- 리스크:
-  - GPT OAuth 공급자 정책 변경 시 초기 설정 실패 가능성
-- 블로커:
-  - 없음
-
-### 다음 액션
-- 다음 단계:
-  - Coding (Planning 업데이트 완료 후 재진입)
-- 담당 스킬:
-  - podonote-coding

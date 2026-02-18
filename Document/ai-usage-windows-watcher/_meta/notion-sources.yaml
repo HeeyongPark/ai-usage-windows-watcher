@@ -1,0 +1,8 @@
+version: 1
+projects:
+  ai-usage-windows-watcher:
+    notion_source: ""
+    notes: "TODO: set Notion source URL"
+default:
+  notion_source: ""
+  notes: "Fallback source"
