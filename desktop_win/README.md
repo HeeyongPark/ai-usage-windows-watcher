@@ -4,10 +4,11 @@ Tkinter-based Windows desktop MVP.
 
 ## What this does now
 - OAuth login button (Authorization Code + PKCE).
-- Codex daily usage table from local SQLite.
+- Codex daily/weekly usage tabs from local SQLite.
 - Quick sample insertion for demo.
 - Default fullscreen startup for small displays (5-inch monitor friendly).
 - Auto refresh every 1 hour by default.
+- Budget alert rule panel (daily/weekly token threshold).
 
 ## Run (development)
 ```bash
@@ -43,3 +44,12 @@ The app stores OAuth tokens at:
 ## Refresh interval
 - default: `1 hour` (`AUIW_REFRESH_INTERVAL_SEC=3600`)
 - manual immediate refresh: `새로고침` button
+
+## Budget alert rule
+- `AUIW_DAILY_TOKEN_BUDGET` (default `20000`)
+- `AUIW_WEEKLY_TOKEN_BUDGET` (default `100000`)
+- `AUIW_ALERT_THRESHOLD_PCT` (default `80`)
+- 상태 기준:
+  - normal: 임계치 미만
+  - warning: 임계치 비율 이상
+  - critical: 예산 초과

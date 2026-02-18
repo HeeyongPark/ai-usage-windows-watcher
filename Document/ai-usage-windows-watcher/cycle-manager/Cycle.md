@@ -11,20 +11,28 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 ## Pipeline Order
 - Big Picture -> Cycle Manager -> Planning -> Coding -> Review -> Integration Test (Pre) -> Git Release -> Deploy -> Integration Test (Post)
 
+## Project Scope Override (2026-02-18)
+- terminal_stage: git_release
+- excluded_stages_this_project:
+  - deploy
+  - integration_test_post
+- completion_rule:
+  - Review 통과 + Integration Test (Pre) 통과 + Git Release 완료 시 `done` 처리
+
 ## Active Queue
-1. [coding] phase1-win-agent-usage-collector :: Windows 사용량 수집기 에이전트 MVP
-2. [queued] phase1-desktop-dashboard :: 로컬 대시보드 MVP
-3. [queued] phase1-budget-alert-rule :: 예산 임계치 알림 규칙
+1. [integration_test_pre] phase1-win-agent-usage-collector :: Windows 사용량 수집기 에이전트 MVP
+2. [integration_test_pre] phase1-desktop-dashboard :: 로컬 대시보드 MVP
+3. [integration_test_pre] phase1-budget-alert-rule :: 예산 임계치 알림 규칙
 
 ## Stage Board (Latest)
 - queued:
-  - phase1-desktop-dashboard
-  - phase1-budget-alert-rule
 - planning:
 - coding:
-  - phase1-win-agent-usage-collector
 - review:
 - integration_test_pre:
+  - phase1-win-agent-usage-collector
+  - phase1-desktop-dashboard
+  - phase1-budget-alert-rule
 - git_release:
 - deploy:
 - integration_test_post:
@@ -115,6 +123,382 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - Review
 - 담당 스킬:
   - podonote-review
+
+## Cycle 13 (2026-02-18 22:37)
+
+### 입력
+- 선택 태스크:
+  - phase1-win-agent-usage-collector
+- Integration Test 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/integration-test/IntegrationTest.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 리뷰 완료 태스크를 pre-deploy 통합 테스트 단계로 전이한다.
+- 방향:
+  - `ui_optional` 프로파일로 자동 테스트 + 정적 검증 증적을 확보한다.
+- 고민거리:
+  - 인터랙티브 UI E2E는 후속 환경에서 확장 필요
+
+### 상태 전이
+- before:
+  - phase1-win-agent-usage-collector: review
+- after:
+  - phase1-win-agent-usage-collector: integration_test_pre
+- 전이 이유:
+  - pre-deploy 검증이 pass(`9 passed`)로 확인되었다.
+
+### 리스크 및 블로커
+- 리스크:
+  - UI 수동 시나리오는 별도 운영 점검 필요
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Git Release
+- 담당 스킬:
+  - podonote-git-release
+
+## Cycle 14 (2026-02-18 22:37)
+
+### 입력
+- 선택 태스크:
+  - phase1-desktop-dashboard
+- Integration Test 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/integration-test/IntegrationTest.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 대시보드 태스크를 pre-deploy 통합 테스트 단계로 전이한다.
+- 방향:
+  - 동일 테스트 증적을 공유하고 태스크별 상태만 개별 전이한다.
+- 고민거리:
+  - UI 운영 환경 해상도별 수동 점검 필요
+
+### 상태 전이
+- before:
+  - phase1-desktop-dashboard: review
+- after:
+  - phase1-desktop-dashboard: integration_test_pre
+- 전이 이유:
+  - pre-deploy 게이트가 pass로 판정되었다.
+
+### 리스크 및 블로커
+- 리스크:
+  - UI 상호작용 테스트 자동화 범위는 제한적
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Git Release
+- 담당 스킬:
+  - podonote-git-release
+
+## Cycle 15 (2026-02-18 22:37)
+
+### 입력
+- 선택 태스크:
+  - phase1-budget-alert-rule
+- Integration Test 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/integration-test/IntegrationTest.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 예산 알림 태스크를 pre-deploy 통합 테스트 단계로 전이한다.
+- 방향:
+  - 동일 검증 증적 기반으로 단계 전이를 마무리한다.
+- 고민거리:
+  - 토큰 기반 경고 모델의 비용 정합성은 후속 태스크에서 고도화
+
+### 상태 전이
+- before:
+  - phase1-budget-alert-rule: review
+- after:
+  - phase1-budget-alert-rule: integration_test_pre
+- 전이 이유:
+  - pre-deploy 게이트 pass로 다음 단계 진입 조건을 충족했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - 비용 모델 정밀화 필요
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Git Release
+- 담당 스킬:
+  - podonote-git-release
+
+## Cycle 6 (2026-02-18 21:40)
+
+### 입력
+- 선택 태스크:
+  - phase1-win-agent-usage-collector
+- Review 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 첫 태스크에 대해 Planning/Coding 정합성과 게이트 충족 여부를 확정한다.
+- 방향:
+  - 결함이 없으면 Review 단계까지 전이하고 Integration Test는 사용자 보류 요청을 따른다.
+- 고민거리:
+  - 로컬 환경에서 `pytest` 미설치 상태로 자동 테스트 증적이 제한됨
+
+### 상태 전이
+- before:
+  - phase1-win-agent-usage-collector: coding
+- after:
+  - phase1-win-agent-usage-collector: review
+- 전이 이유:
+  - Review 판정이 pass(조건부)로 기록되어 Review 단계까지 완료했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - 테스트 러너 부재로 자동 테스트 재실행 미완료
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Integration Test (Pre) 대기 (사용자 보류)
+- 담당 스킬:
+  - integration-test-pre
+
+## Cycle 7 (2026-02-18 21:43)
+
+### 입력
+- 선택 태스크:
+  - phase1-desktop-dashboard
+- Big Picture 소스:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/big-picture/BigPicture.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 두 번째 큐 태스크를 단일 태스크 Planning으로 진입시킨다.
+- 방향:
+  - 일/주 집계 분리와 UI 가독성 개선 중심으로 계획화한다.
+- 고민거리:
+  - 소형 화면에서 정보 밀도 증가를 어떻게 제어할지
+
+### 상태 전이
+- before:
+  - phase1-desktop-dashboard: queued
+- after:
+  - phase1-desktop-dashboard: planning
+- 전이 이유:
+  - Active Queue 2번 태스크를 실행 대상으로 승격했다.
+
+### Handoff To Planning (단일 태스크)
+- task-id:
+  - phase1-desktop-dashboard
+- 입력:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/cycle-manager/Cycle.md
+- 출력:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-desktop-dashboard.md
+
+### 리스크 및 블로커
+- 리스크:
+  - 주차 표기가 사용자 친화적이지 않을 수 있음
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Coding
+- 담당 스킬:
+  - podonote-coding
+
+## Cycle 8 (2026-02-18 21:44)
+
+### 입력
+- 선택 태스크:
+  - phase1-desktop-dashboard
+- Planning 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-desktop-dashboard.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 계획된 일/주 대시보드 범위를 실제 코드에 반영한다.
+- 방향:
+  - 저장소 쿼리 + 서비스 계층 + UI 탭을 최소 변경으로 확장한다.
+- 고민거리:
+  - 기존 기능(OAuth/자동갱신)에 회귀 영향이 없는지
+
+### 상태 전이
+- before:
+  - phase1-desktop-dashboard: planning
+- after:
+  - phase1-desktop-dashboard: coding
+- 전이 이유:
+  - 구현 파일 변경과 검증 증적을 생성했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - pytest 부재로 신규 테스트 실행 미완료
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Review
+- 담당 스킬:
+  - podonote-review
+
+## Cycle 9 (2026-02-18 21:45)
+
+### 입력
+- 선택 태스크:
+  - phase1-desktop-dashboard
+- Review 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 대시보드 확장 코드의 결함 유무와 문서 정합성을 확정한다.
+- 방향:
+  - 결함이 없으면 Review 단계까지 전이하고 이후 단계는 사용자 보류 요청을 따른다.
+- 고민거리:
+  - 테스트 미실행 상태를 조건부 통과로 둘지 여부
+
+### 상태 전이
+- before:
+  - phase1-desktop-dashboard: coding
+- after:
+  - phase1-desktop-dashboard: review
+- 전이 이유:
+  - Review 판정 pass(조건부)로 기록되어 Review 단계까지 완료했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - 자동 테스트 재실행 미완료
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Integration Test (Pre) 대기 (사용자 보류)
+- 담당 스킬:
+  - integration-test-pre
+
+## Cycle 10 (2026-02-18 21:46)
+
+### 입력
+- 선택 태스크:
+  - phase1-budget-alert-rule
+- Big Picture 소스:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/big-picture/BigPicture.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 세 번째 큐 태스크를 Planning 상태로 진입시킨다.
+- 방향:
+  - 토큰 기반 예산 임계치 규칙을 최소한의 정책으로 문서화한다.
+- 고민거리:
+  - 토큰 기준 경고와 실제 비용 경고의 괴리
+
+### 상태 전이
+- before:
+  - phase1-budget-alert-rule: queued
+- after:
+  - phase1-budget-alert-rule: planning
+- 전이 이유:
+  - 큐 마지막 태스크를 실행 대상으로 승격했다.
+
+### Handoff To Planning (단일 태스크)
+- task-id:
+  - phase1-budget-alert-rule
+- 입력:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/cycle-manager/Cycle.md
+- 출력:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-budget-alert-rule.md
+
+### 리스크 및 블로커
+- 리스크:
+  - 임계치 기본값이 실제 사용 패턴에 맞지 않을 수 있음
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Coding
+- 담당 스킬:
+  - podonote-coding
+
+## Cycle 11 (2026-02-18 21:47)
+
+### 입력
+- 선택 태스크:
+  - phase1-budget-alert-rule
+- Planning 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-budget-alert-rule.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 예산 규칙 모듈과 UI 연동을 구현해 운영 경고를 제공한다.
+- 방향:
+  - 환경변수 기반 정책 + 화면 상태 텍스트를 우선 구현한다.
+- 고민거리:
+  - 경고 상태 알림 빈도/표현 방식의 사용자 피로 가능성
+
+### 상태 전이
+- before:
+  - phase1-budget-alert-rule: planning
+- after:
+  - phase1-budget-alert-rule: coding
+- 전이 이유:
+  - 규칙 모듈/테스트/문서 반영을 포함한 구현 작업을 완료했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - pytest 부재로 테스트 자동 실행 미완료
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Review
+- 담당 스킬:
+  - podonote-review
+
+## Cycle 12 (2026-02-18 21:48)
+
+### 입력
+- 선택 태스크:
+  - phase1-budget-alert-rule
+- Review 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 예산 임계치 규칙의 정확성과 운영 문서 정합성을 검토한다.
+- 방향:
+  - 결함이 없으면 Review 단계까지 전이하고 이후 단계는 사용자가 추후 진행한다.
+- 고민거리:
+  - 토큰 기반 규칙에 대한 추후 비용 모델 고도화 필요성
+
+### 상태 전이
+- before:
+  - phase1-budget-alert-rule: coding
+- after:
+  - phase1-budget-alert-rule: review
+- 전이 이유:
+  - Review 판정 pass(조건부)로 기록되어 Review 단계까지 완료했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - 자동 테스트 재실행 미완료
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Integration Test (Pre) 대기 (사용자 보류)
+- 담당 스킬:
+  - integration-test-pre
 
 ## Cycle 3 (2026-02-18 16:32)
 

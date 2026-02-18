@@ -46,6 +46,8 @@ python .\src\app.py
 3. 앱으로 돌아와 로그인 상태 확인
 4. `Codex 샘플 1건 생성`으로 테스트 데이터 생성
 5. 일별 사용량 표에서 세션/요청/토큰 확인
+6. 주별 탭에서 주차별 합계를 확인
+7. 예산 알림 규칙 패널에서 정상/주의/경고 상태 확인
 
 ## 7) 5인치 모니터 사용 팁
 - 앱은 기본 전체화면으로 시작한다.
@@ -60,7 +62,19 @@ python .\src\app.py
 - 주기 변경 시 `desktop_win\.env`에 설정
   - `AUIW_REFRESH_INTERVAL_SEC=3600`
   - 최소 60초 이상만 허용
-## 9) 데이터/토큰 저장 위치
+
+## 9) 예산 임계치 알림 규칙
+- 앱은 토큰 사용량 기준으로 일/주 예산 상태를 계산한다.
+- 설정 파일(`desktop_win\.env`) 예시:
+  - `AUIW_DAILY_TOKEN_BUDGET=20000`
+  - `AUIW_WEEKLY_TOKEN_BUDGET=100000`
+  - `AUIW_ALERT_THRESHOLD_PCT=80`
+- 상태 의미:
+  - `정상`: 임계치 미만
+  - `주의`: 임계치 비율 이상
+  - `예산 경고`: 예산 초과
+
+## 10) 데이터/토큰 저장 위치
 - OAuth 토큰: `%APPDATA%\AIUsageWatcher\oauth_token.json`
 - 사용량 DB 기본 경로: `%USERPROFILE%\.ai-usage-watcher\usage.db`
 - DB 경로 변경 시 `AUIW_DB_PATH` 환경변수 사용

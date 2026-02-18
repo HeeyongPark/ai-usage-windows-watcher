@@ -5,6 +5,8 @@
 
 ## Active Tasks
 - [phase1-win-agent-usage-collector](./tasks/phase1-win-agent-usage-collector.md)
+- [phase1-desktop-dashboard](./tasks/phase1-desktop-dashboard.md)
+- [phase1-budget-alert-rule](./tasks/phase1-budget-alert-rule.md)
 
 ## Notes
 - New planning outputs are written in `./tasks/`.

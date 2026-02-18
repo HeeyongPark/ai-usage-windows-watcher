@@ -8,7 +8,7 @@ Local-first usage tracker for AI tools on Windows.
 - Show daily summary for quick budget tracking.
 
 ## Current Scope
-- Phase 1 bootstrap for agent, storage schema, CLI summary, and Windows UI (OAuth + Codex usage view).
+- Phase 1 bootstrap for agent, storage schema, CLI summary, and Windows UI (OAuth + Codex daily/weekly view + budget alert rule).
 
 ## Project Layout
 - `agent/README.md`: agent usage guide

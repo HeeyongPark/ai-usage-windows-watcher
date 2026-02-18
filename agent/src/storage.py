@@ -82,3 +82,19 @@ def list_daily_summary(connection: sqlite3.Connection) -> list[sqlite3.Row]:
     )
     return list(cursor.fetchall())
 
+
+def list_weekly_summary(connection: sqlite3.Connection) -> list[sqlite3.Row]:
+    cursor = connection.execute(
+        """
+        SELECT
+            strftime('%Y-W%W', session_start) AS week,
+            tool_name,
+            COUNT(*) AS sessions,
+            SUM(request_count) AS requests,
+            SUM(token_estimate) AS tokens
+        FROM usage_sessions
+        GROUP BY strftime('%Y-W%W', session_start), tool_name
+        ORDER BY week DESC, tool_name ASC
+        """
+    )
+    return list(cursor.fetchall())

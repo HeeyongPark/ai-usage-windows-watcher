@@ -6,9 +6,14 @@ import tkinter as tk
 from datetime import datetime
 from tkinter import messagebox, ttk
 
+from budget_rules import evaluate_budget_alert, load_budget_rule_settings
 from env_loader import load_env_file
 from oauth_client import OAuthPKCEClient, OAuthSettings, load_token
-from usage_service import codex_daily_summary, insert_codex_sample_session
+from usage_service import (
+    codex_daily_summary,
+    codex_weekly_summary,
+    insert_codex_sample_session,
+)
 
 
 def resolve_refresh_interval_ms() -> int:
@@ -31,6 +36,7 @@ class UsageDashboardApp(tk.Tk):
         self.is_fullscreen = True
         self.refresh_interval_ms = resolve_refresh_interval_ms()
         self.refresh_job_id: str | None = None
+        self.budget_settings = load_budget_rule_settings()
 
         self.login_status_var = tk.StringVar(value="로그인 상태: 미로그인")
         self.total_tokens_var = tk.StringVar(value="총 토큰: 0")
@@ -40,6 +46,8 @@ class UsageDashboardApp(tk.Tk):
         self.auto_refresh_var = tk.StringVar(
             value=f"자동 갱신: {self.refresh_interval_ms // 60000}분"
         )
+        self.budget_status_var = tk.StringVar(value="예산 상태: 계산 중")
+        self.budget_detail_var = tk.StringVar(value="일/주 사용량 집계 중")
 
         self._configure_window()
         self._configure_styles()
@@ -154,27 +162,57 @@ class UsageDashboardApp(tk.Tk):
             side=tk.RIGHT, padx=(10, 0)
         )
 
-        table_frame = ttk.LabelFrame(root, text="Codex 일별 사용량", padding=self.section_padding)
+        alert_frame = ttk.LabelFrame(root, text="예산 알림 규칙", padding=self.section_padding)
+        alert_frame.pack(fill=tk.X, pady=(0, 10))
+        ttk.Label(alert_frame, textvariable=self.budget_status_var).pack(anchor=tk.W)
+        ttk.Label(alert_frame, textvariable=self.budget_detail_var).pack(anchor=tk.W, pady=(2, 0))
+
+        table_frame = ttk.LabelFrame(root, text="Codex 사용량 (일/주)", padding=self.section_padding)
         table_frame.pack(fill=tk.BOTH, expand=True)
-
-        columns = ("day", "sessions", "requests", "tokens")
-        self.table = ttk.Treeview(table_frame, columns=columns, show="headings")
-        self.table.heading("day", text="날짜")
-        self.table.heading("sessions", text="세션 수")
-        self.table.heading("requests", text="요청 수")
-        self.table.heading("tokens", text="토큰(추정)")
         table_width = max(480, self.screen_width - 120)
-        day_width = int(table_width * 0.36)
-        metric_width = int((table_width - day_width) / 3)
-        self.table.column("day", width=day_width, anchor=tk.W)
-        self.table.column("sessions", width=metric_width, anchor=tk.CENTER)
-        self.table.column("requests", width=metric_width, anchor=tk.CENTER)
-        self.table.column("tokens", width=metric_width, anchor=tk.CENTER)
-        self.table.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        metric_width = int(table_width * 0.2)
 
-        scrollbar = ttk.Scrollbar(table_frame, orient=tk.VERTICAL, command=self.table.yview)
-        self.table.configure(yscrollcommand=scrollbar.set)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        notebook = ttk.Notebook(table_frame)
+        notebook.pack(fill=tk.BOTH, expand=True)
+
+        daily_tab = ttk.Frame(notebook)
+        weekly_tab = ttk.Frame(notebook)
+        notebook.add(daily_tab, text="일별")
+        notebook.add(weekly_tab, text="주별")
+
+        daily_columns = ("day", "sessions", "requests", "tokens")
+        self.daily_table = ttk.Treeview(daily_tab, columns=daily_columns, show="headings")
+        self.daily_table.heading("day", text="날짜")
+        self.daily_table.heading("sessions", text="세션 수")
+        self.daily_table.heading("requests", text="요청 수")
+        self.daily_table.heading("tokens", text="토큰(추정)")
+        self.daily_table.column("day", width=int(table_width * 0.4), anchor=tk.W)
+        self.daily_table.column("sessions", width=metric_width, anchor=tk.CENTER)
+        self.daily_table.column("requests", width=metric_width, anchor=tk.CENTER)
+        self.daily_table.column("tokens", width=metric_width, anchor=tk.CENTER)
+        self.daily_table.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        daily_scrollbar = ttk.Scrollbar(daily_tab, orient=tk.VERTICAL, command=self.daily_table.yview)
+        self.daily_table.configure(yscrollcommand=daily_scrollbar.set)
+        daily_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        weekly_columns = ("week", "sessions", "requests", "tokens")
+        self.weekly_table = ttk.Treeview(weekly_tab, columns=weekly_columns, show="headings")
+        self.weekly_table.heading("week", text="주차")
+        self.weekly_table.heading("sessions", text="세션 수")
+        self.weekly_table.heading("requests", text="요청 수")
+        self.weekly_table.heading("tokens", text="토큰(추정)")
+        self.weekly_table.column("week", width=int(table_width * 0.4), anchor=tk.W)
+        self.weekly_table.column("sessions", width=metric_width, anchor=tk.CENTER)
+        self.weekly_table.column("requests", width=metric_width, anchor=tk.CENTER)
+        self.weekly_table.column("tokens", width=metric_width, anchor=tk.CENTER)
+        self.weekly_table.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        weekly_scrollbar = ttk.Scrollbar(
+            weekly_tab, orient=tk.VERTICAL, command=self.weekly_table.yview
+        )
+        self.weekly_table.configure(yscrollcommand=weekly_scrollbar.set)
+        weekly_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
     def _load_saved_auth_status(self) -> None:
         token = load_token()
@@ -224,19 +262,22 @@ class UsageDashboardApp(tk.Tk):
             messagebox.showerror("샘플 생성 실패", str(exc))
 
     def refresh_usage_table(self) -> None:
-        for item in self.table.get_children():
-            self.table.delete(item)
+        for item in self.daily_table.get_children():
+            self.daily_table.delete(item)
+        for item in self.weekly_table.get_children():
+            self.weekly_table.delete(item)
 
-        rows = codex_daily_summary()
+        daily_rows = codex_daily_summary()
+        weekly_rows = codex_weekly_summary()
         total_sessions = 0
         total_requests = 0
         total_tokens = 0
 
-        for row in rows:
+        for row in daily_rows:
             total_sessions += row["sessions"]
             total_requests += row["requests"]
             total_tokens += row["tokens"]
-            self.table.insert(
+            self.daily_table.insert(
                 "",
                 tk.END,
                 values=(
@@ -247,9 +288,37 @@ class UsageDashboardApp(tk.Tk):
                 ),
             )
 
+        for row in weekly_rows:
+            self.weekly_table.insert(
+                "",
+                tk.END,
+                values=(
+                    row["week"],
+                    row["sessions"],
+                    row["requests"],
+                    row["tokens"],
+                ),
+            )
+
         self.total_sessions_var.set(f"총 세션: {total_sessions}")
         self.total_requests_var.set(f"총 요청: {total_requests}")
         self.total_tokens_var.set(f"총 토큰: {total_tokens}")
+
+        daily_tokens = daily_rows[0]["tokens"] if daily_rows else 0
+        weekly_tokens = weekly_rows[0]["tokens"] if weekly_rows else 0
+        budget_alert = evaluate_budget_alert(
+            daily_tokens=daily_tokens,
+            weekly_tokens=weekly_tokens,
+            settings=self.budget_settings,
+        )
+        self.budget_status_var.set(f"예산 상태: {budget_alert.message}")
+        self.budget_detail_var.set(
+            (
+                f"당일 {budget_alert.daily_tokens}/{self.budget_settings.daily_token_budget} tokens, "
+                f"주간 {budget_alert.weekly_tokens}/{self.budget_settings.weekly_token_budget} tokens"
+            )
+        )
+
         self.last_refresh_var.set(
             f"최근 갱신: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         )

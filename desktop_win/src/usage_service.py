@@ -39,6 +39,29 @@ def codex_daily_summary() -> list[dict[str, Any]]:
     return codex_rows
 
 
+def codex_weekly_summary() -> list[dict[str, Any]]:
+    settings = load_settings()
+    ensure_db_parent(settings.db_path)
+    with storage.connect(settings.db_path) as connection:
+        storage.init_db(connection)
+        rows = storage.list_weekly_summary(connection)
+
+    codex_rows = []
+    for row in rows:
+        if row["tool_name"].lower() != "codex":
+            continue
+        codex_rows.append(
+            {
+                "week": row["week"],
+                "tool_name": row["tool_name"],
+                "sessions": int(row["sessions"]),
+                "requests": int(row["requests"]),
+                "tokens": int(row["tokens"]),
+            }
+        )
+    return codex_rows
+
+
 def insert_codex_sample_session(request_count: int = 5, token_estimate: int = 2500) -> str:
     settings = load_settings()
     ensure_db_parent(settings.db_path)
@@ -97,4 +120,3 @@ def insert_codex_sample_session(request_count: int = 5, token_estimate: int = 25
             storage.append_event(connection, event)
 
     return session_id
-

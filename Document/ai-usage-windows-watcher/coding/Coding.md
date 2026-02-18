@@ -47,6 +47,75 @@
 - To Review:
   - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
 
+## Coding Update (2026-02-18 21:38)
+- from_task:
+  - phase1-desktop-dashboard
+- scope_update:
+  - Codex 사용량 대시보드 일/주 집계 분리
+- 구현 전략:
+  - 저장소/서비스 계층에 주간 집계 API 추가
+  - UI를 Notebook 탭 구조로 전환해 일/주 보기를 분리
+
+### 변경 파일
+- /Users/mirador/Documents/ai-usage-windows-watcher/agent/src/storage.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/usage_service.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/app.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/test_usage_service.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/README.md
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/WINDOWS_USAGE.md
+
+### 구현 요약
+- `list_weekly_summary`/`codex_weekly_summary`를 추가해 주차 단위 집계를 제공했다.
+- 대시보드에서 일별/주별 표를 탭으로 분리해 운영자가 추세를 빠르게 확인할 수 있게 했다.
+
+### 검증 증적
+- 실행 커맨드:
+  - `python3 -m py_compile agent/src/*.py desktop_win/src/*.py`
+  - `python3 - <<'PY' ... insert_codex_sample_session/codex_daily_summary/codex_weekly_summary ... PY`
+- 결과:
+  - 정적 컴파일 통과
+  - 샘플 데이터 기준 `daily_rows=1`, `weekly_rows=1` 확인
+  - `pytest`는 로컬 환경 미설치(`No module named pytest`)로 미실행
+
+### 다음 핸드오프
+- To Review:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+
+## Coding Update (2026-02-18 21:39)
+- from_task:
+  - phase1-budget-alert-rule
+- scope_update:
+  - 토큰 기반 예산 임계치 알림 규칙 도입
+- 구현 전략:
+  - 예산 설정/판정을 UI와 분리한 `budget_rules` 모듈 신설
+  - 대시보드 갱신 시 일/주 토큰 집계로 상태(`normal/warning/critical`) 계산
+
+### 변경 파일
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/budget_rules.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/app.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/test_budget_rules.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/.env.example
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/README.md
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/WINDOWS_USAGE.md
+- /Users/mirador/Documents/ai-usage-windows-watcher/README.md
+
+### 구현 요약
+- 환경변수 기반 예산 설정(`AUIW_DAILY_TOKEN_BUDGET`, `AUIW_WEEKLY_TOKEN_BUDGET`, `AUIW_ALERT_THRESHOLD_PCT`)을 추가했다.
+- 대시보드에 예산 상태/상세 패널을 추가해 사용량 초과 위험을 즉시 확인 가능하게 했다.
+
+### 검증 증적
+- 실행 커맨드:
+  - `python3 -m py_compile agent/src/*.py desktop_win/src/*.py`
+  - `python3 - <<'PY' ... evaluate_budget_alert ... PY`
+- 결과:
+  - 정적 컴파일 통과
+  - 샘플 데이터 기준 `alert_level=normal` 계산 확인
+  - `pytest`는 로컬 환경 미설치(`No module named pytest`)로 미실행
+
+### 다음 핸드오프
+- To Review:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+
 ## Coding Update (2026-02-18 16:31)
 - scope_update:
   - Windows 사용법 문서화

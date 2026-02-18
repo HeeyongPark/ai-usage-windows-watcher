@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import sys
 from datetime import timedelta
 from pathlib import Path
@@ -15,11 +14,13 @@ for path in (str(DESKTOP_SRC), str(AGENT_SRC)):
 
 from collector import UsageCollector, UsageEvent, now_utc  # noqa: E402
 import storage  # noqa: E402
-from usage_service import codex_daily_summary  # noqa: E402
+from usage_service import codex_daily_summary, codex_weekly_summary  # noqa: E402
 
 
-def _insert_session(db_path: Path, tool_name: str, session_id: str) -> None:
-    start_at = now_utc() - timedelta(minutes=30)
+def _insert_session(
+    db_path: Path, tool_name: str, session_id: str, start_offset_days: int = 0
+) -> None:
+    start_at = now_utc() - timedelta(minutes=30, days=start_offset_days)
     end_at = now_utc()
     events = [
         UsageEvent(
@@ -73,3 +74,15 @@ def test_codex_daily_summary_only_returns_codex(tmp_path: Path, monkeypatch) -> 
     assert len(rows) == 1
     assert rows[0]["tool_name"] == "codex"
 
+
+def test_codex_weekly_summary_aggregates_codex_sessions(tmp_path: Path, monkeypatch) -> None:
+    db_path = tmp_path / "usage.db"
+    monkeypatch.setenv("AUIW_DB_PATH", str(db_path))
+
+    _insert_session(db_path, "codex", "session-codex-a")
+    _insert_session(db_path, "codex", "session-codex-b", start_offset_days=8)
+    _insert_session(db_path, "chatgpt", "session-chatgpt")
+
+    rows = codex_weekly_summary()
+    assert len(rows) >= 1
+    assert all(row["tool_name"] == "codex" for row in rows)
