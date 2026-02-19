@@ -33,7 +33,7 @@ function Ensure-RuntimeDllSet {
         [string]$BuildPythonPath
     )
 
-    $bundleInternalDir = Join-Path $BundleRootPath "_internal"
+    $bundleInternalDir = Join-Path -Path ([string]$BundleRootPath) -ChildPath "_internal"
     $buildPythonDir = Split-Path -Parent $BuildPythonPath
     $buildVenvRoot = Split-Path -Parent $buildPythonDir
     $runtimeInfoJson = (& $BuildPythonPath -c "import json, os, sys; print(json.dumps({'abi': f'python{sys.version_info.major}{sys.version_info.minor}.dll', 'base_prefix': sys.base_prefix, 'base_dlls': os.path.join(sys.base_prefix, 'DLLs')}))" | Out-String).Trim()
@@ -47,12 +47,26 @@ function Ensure-RuntimeDllSet {
         throw "Unable to resolve Python DLL name from build interpreter."
     }
 
-    $sourceSearchDirs = @(
+    $sourceSearchDirs = @()
+    foreach ($candidateDir in @(
         $buildPythonDir,
         $buildVenvRoot,
         [string]$runtimeInfo.base_prefix,
         [string]$runtimeInfo.base_dlls
-    ) | Where-Object { $_ -and (Test-Path $_) } | Select-Object -Unique
+    )) {
+        if (-not $candidateDir) {
+            continue
+        }
+
+        $candidateDir = [string]$candidateDir
+        if (-not (Test-Path -Path $candidateDir)) {
+            continue
+        }
+
+        if ($sourceSearchDirs -notcontains $candidateDir) {
+            $sourceSearchDirs += $candidateDir
+        }
+    }
 
     $runtimeDllRules = @(
         @{ Name = $pythonDllName; Required = $true },
@@ -62,12 +76,12 @@ function Ensure-RuntimeDllSet {
     )
 
     foreach ($rule in $runtimeDllRules) {
-        $dllName = $rule.Name
-        $dllRequired = [bool]$rule.Required
+        $dllName = [string]$rule["Name"]
+        $dllRequired = [bool]$rule["Required"]
 
         $bundleCandidates = @(
-            Join-Path $bundleInternalDir $dllName,
-            Join-Path $BundleRootPath $dllName
+            Join-Path -Path ([string]$bundleInternalDir) -ChildPath $dllName,
+            Join-Path -Path ([string]$BundleRootPath) -ChildPath $dllName
         )
         $bundleHit = $bundleCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
         if ($bundleHit) {
@@ -77,7 +91,7 @@ function Ensure-RuntimeDllSet {
 
         $sourceCandidate = $null
         foreach ($sourceDir in $sourceSearchDirs) {
-            $candidate = Join-Path $sourceDir $dllName
+            $candidate = Join-Path -Path ([string]$sourceDir) -ChildPath $dllName
             if (Test-Path $candidate) {
                 $sourceCandidate = $candidate
                 break
@@ -88,7 +102,7 @@ function Ensure-RuntimeDllSet {
             if (-not (Test-Path $bundleInternalDir)) {
                 New-Item -ItemType Directory -Path $bundleInternalDir -Force | Out-Null
             }
-            $targetPath = Join-Path $bundleInternalDir $dllName
+            $targetPath = Join-Path -Path ([string]$bundleInternalDir) -ChildPath $dllName
             Copy-Item -Path $sourceCandidate -Destination $targetPath -Force
             Write-Host "[fixup] copied runtime DLL: $dllName"
             continue
