@@ -24,6 +24,10 @@
   - launcher exists:
   - collector flat exists:
   - collector internal exists:
+  - python runtime dll exists (`python3XX.dll`):
+  - python abi dll exists (`python3.dll`):
+  - vcruntime140.dll exists:
+  - vcruntime140_1.dll exists:
 
 ## Checklist Result
 - Checklist file:

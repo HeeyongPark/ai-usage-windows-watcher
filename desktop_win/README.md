@@ -26,12 +26,33 @@ Bundle output:
 - evidence scripts: `prepare_windows_smoke_evidence.ps1`, `windows_runtime_probe.ps1`
 - evidence templates: `smoke_evidence\templates\*.md`
 - config template: `.env.example`
-- build script pins bundle layout to `_internal` and validates `collector.py` path
+- build script pins bundle layout to `_internal`, validates `collector.py`, and prechecks runtime DLLs (`python3*.dll`, `python3.dll`, `vcruntime140*.dll`)
 
 End-user launch:
 - Double-click `run_ai_usage_watcher.bat`
 - For smoke evidence, double-click `collect_windows_smoke_evidence.bat`
 - Fill `.env` OAuth values before first login
+
+Troubleshooting (`Failed to load Python DLL ... _internal\python312.dll`):
+- Always launch from `desktop_win\dist\AIUsageWatcher\run_ai_usage_watcher.bat`.
+- Do not run stale outputs from paths like `desktop_win\build\dist\...`.
+- If bundle is stored in OneDrive, set the folder to `Always keep on this device`.
+- Rebuild with `scripts\build_windows_bundle.ps1` to regenerate missing runtime DLLs.
+
+## Run (CI build without a Windows machine)
+Use GitHub Actions workflow:
+- workflow file: `/Users/mirador/Documents/ai-usage-windows-watcher/.github/workflows/windows-exe-build.yml`
+- workflow name: `Windows EXE Build`
+- artifact name: `AIUsageWatcher-windows-bundle`
+
+How to use:
+1. Open repository Actions tab and run `Windows EXE Build` (`workflow_dispatch`).
+2. Wait for the `build` job on `windows-latest` to finish.
+3. Download `AIUsageWatcher-windows-bundle` artifact.
+4. In the downloaded bundle, verify:
+   - `AIUsageWatcher.exe`
+   - `AIUsageWatcher.exe.sha256.txt`
+   - `run_ai_usage_watcher.bat`
 
 ## Run (development)
 ```bash

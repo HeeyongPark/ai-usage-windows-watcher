@@ -96,6 +96,45 @@ $bundleExePath = Join-Path $resolvedBundleRoot "AIUsageWatcher.exe"
 $launcherPath = Join-Path $resolvedBundleRoot "run_ai_usage_watcher.bat"
 $collectorFlatPath = Join-Path $resolvedBundleRoot "agent\\src\\collector.py"
 $collectorInternalPath = Join-Path $resolvedBundleRoot "_internal\\agent\\src\\collector.py"
+$pythonAbiInternalPath = Join-Path $resolvedBundleRoot "_internal\\python3.dll"
+$pythonAbiFlatPath = Join-Path $resolvedBundleRoot "python3.dll"
+$vcRuntimeInternalPath = Join-Path $resolvedBundleRoot "_internal\\vcruntime140.dll"
+$vcRuntimeFlatPath = Join-Path $resolvedBundleRoot "vcruntime140.dll"
+$vcRuntime1InternalPath = Join-Path $resolvedBundleRoot "_internal\\vcruntime140_1.dll"
+$vcRuntime1FlatPath = Join-Path $resolvedBundleRoot "vcruntime140_1.dll"
+
+$pythonRuntimeDllPath = ""
+$pythonRuntimeCandidates = @()
+if (Test-Path (Join-Path $resolvedBundleRoot "_internal")) {
+    $pythonRuntimeCandidates += Get-ChildItem -Path (Join-Path $resolvedBundleRoot "_internal") -Filter "python3*.dll" -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne "python3.dll" }
+}
+if (Test-Path $resolvedBundleRoot) {
+    $pythonRuntimeCandidates += Get-ChildItem -Path $resolvedBundleRoot -Filter "python3*.dll" -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne "python3.dll" }
+}
+if ($pythonRuntimeCandidates.Count -gt 0) {
+    $pythonRuntimeDllPath = $pythonRuntimeCandidates[0].FullName
+}
+
+$pythonAbiPath = ""
+if (Test-Path $pythonAbiInternalPath) {
+    $pythonAbiPath = $pythonAbiInternalPath
+} elseif (Test-Path $pythonAbiFlatPath) {
+    $pythonAbiPath = $pythonAbiFlatPath
+}
+
+$vcRuntimePath = ""
+if (Test-Path $vcRuntimeInternalPath) {
+    $vcRuntimePath = $vcRuntimeInternalPath
+} elseif (Test-Path $vcRuntimeFlatPath) {
+    $vcRuntimePath = $vcRuntimeFlatPath
+}
+
+$vcRuntime1Path = ""
+if (Test-Path $vcRuntime1InternalPath) {
+    $vcRuntime1Path = $vcRuntime1InternalPath
+} elseif (Test-Path $vcRuntime1FlatPath) {
+    $vcRuntime1Path = $vcRuntime1FlatPath
+}
 
 $bundleLayout = "missing"
 if (Test-Path $collectorInternalPath) {
@@ -137,6 +176,14 @@ $runtimeContext = [ordered]@{
     collector_flat_exists = (Test-Path $collectorFlatPath)
     collector_internal_path = $collectorInternalPath
     collector_internal_exists = (Test-Path $collectorInternalPath)
+    python_runtime_dll_path = $pythonRuntimeDllPath
+    python_runtime_dll_exists = [bool]$pythonRuntimeDllPath
+    python_abi_dll_path = $pythonAbiPath
+    python_abi_dll_exists = [bool]$pythonAbiPath
+    vcruntime140_dll_path = $vcRuntimePath
+    vcruntime140_dll_exists = [bool]$vcRuntimePath
+    vcruntime140_1_dll_path = $vcRuntime1Path
+    vcruntime140_1_dll_exists = [bool]$vcRuntime1Path
     screens = $resolutionList
 }
 

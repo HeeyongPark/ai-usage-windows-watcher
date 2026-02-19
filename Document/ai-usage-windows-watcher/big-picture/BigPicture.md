@@ -63,17 +63,26 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 이번 루프 핵심 내용:
   - onedir 무설치 번들/frozen 경로 호환성 보강은 완료했고 자동 테스트 기준선(`15 passed`)을 유지했다.
   - 사용자 실행 환경 제약으로 실기기 수동 스모크를 push 차단 게이트에서 제외하는 프로젝트 한정 override를 적용했다.
+  - `desktop_win/scripts/build_windows_bundle.ps1`는 Windows 전용(`$env:OS == Windows_NT`)이며, 현재 macOS 작업 환경에서는 PowerShell이 없어 공식 `exe` 번들을 직접 생성할 수 없다.
+  - Windows 실기기에서 `Failed to load Python DLL ... _internal\\python312.dll` 오류가 보고됐고, 경로가 표준 산출물(`dist\\AIUsageWatcher`)이 아닌 `build\\dist\\UsageWatcher`로 확인되어 비표준 번들/런타임 DLL 누락 가능성을 리스크로 추가했다.
 - 이번 사이클 방향:
+  - `phase1-windows-exe-build-artifact-delivery`를 추가해 Windows 빌드 머신/CI에서 `AIUsageWatcher.exe` 아티팩트를 생성·검증·전달하는 경로를 고정한다.
   - `phase1-windows-runtime-smoke`는 `ui_optional` pre-deploy 게이트로 운영하고 자동 테스트 통과 시 git_release로 전이한다.
   - 실기기 증적 수집(`phase1-windows-noinstall-smoke-evidence`)은 권장 트랙으로 유지한다.
+  - 번들 생성 단계에서 `_internal` 런타임 DLL(`python3*.dll`, `vcruntime140*.dll`) 존재를 강제 검증하고, 런처 사전 점검으로 사용자에게 즉시 복구 가이드를 제공한다.
 - 고민거리:
+  - Windows 빌드 러너(로컬 실기기 vs GitHub Actions windows-latest) 중 어떤 채널을 표준으로 고정할지
   - 실기기 회귀를 비차단으로 운영할 때 발견 지연 리스크를 어떻게 관리할지
   - 코드서명 전 SmartScreen/백신 오탐 대응 가이드를 어느 수준까지 문서화할지
+  - OneDrive 동기화/온디맨드 파일 정책에서 `_internal` DLL 누락 오탐이 발생할 때 배포 가이드를 어떻게 단순화할지
 - 고정 제약:
   - Windows 우선, 개인정보 최소 수집, 오프라인 우선 동작
   - Phase 1 배포 형식은 onedir로 고정(onefile 미지원)
+  - `AIUsageWatcher.exe` 빌드는 Windows(PowerShell + PyInstaller) 환경에서만 수행한다.
   - 사용자 PC에 Python/Git/터미널 사전 설치를 요구하지 않는다.
 - 성공 기준:
+  - Windows 빌드 환경에서 `desktop_win/dist/AIUsageWatcher/AIUsageWatcher.exe`를 생성하고 배포 가능한 번들(`run_ai_usage_watcher.bat`, 증적 스크립트 포함)을 확보한다.
+  - 런타임 DLL(`_internal\\python3*.dll`, `_internal\\vcruntime140*.dll`) 존재 검증이 빌드 단계에서 자동 통과한다.
   - `phase1-windows-runtime-smoke` Integration Test (Pre)에서 자동 테스트가 통과한다.
   - pre-deploy pass 직후 git_release/push가 가능하다.
   - 실기기 증적은 권장 항목으로 누적 기록한다.
@@ -92,7 +101,21 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - frozen 경로 해석 단위 테스트 추가/통과
   - 빌드 산출물 구조와 코드 경로 전략 정합성 문서화
 
-2. `phase1-windows-noinstall-smoke-evidence`
+2. `phase1-windows-exe-build-artifact-delivery`
+- 한 줄 목표:
+  - Windows 빌드 머신/CI에서 onedir 번들을 생성하고 `AIUsageWatcher.exe` 아티팩트를 전달 가능한 형태로 고정한다.
+- 근거 문서:
+  - `./phases/Phase-1.md`
+  - `./overview/modules/04-test-strategy.md`
+  - `./overview/modules/05-windows-runtime-validation.md`
+- 핵심 AC/DoD:
+  - Windows에서 `desktop_win/scripts/build_windows_bundle.ps1` 실행 성공
+  - `desktop_win/dist/AIUsageWatcher/`에 `AIUsageWatcher.exe`와 런처/증적 스크립트 동봉
+  - 런타임 DLL(`python3*.dll`, `vcruntime140*.dll`) 누락 시 빌드 단계에서 자동 보강 또는 명시적 실패 처리
+  - 런처 실행 전 프리플라이트에서 DLL 누락/비표준 경로를 사용자에게 즉시 안내
+  - 빌드 로그와 `exe` 체크섬(SHA-256)을 사이클 증적에 기록
+
+3. `phase1-windows-noinstall-smoke-evidence`
 - 한 줄 목표:
   - Win10/Win11 실기기에서 onedir 무설치 실행 증적(체크리스트/아티팩트)을 확보한다.
 - 근거 문서:
@@ -103,7 +126,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - Win10/Win11 각 1회 onedir 실행 증적 첨부
   - 번들 구조(flat/`_internal`) 기록
 
-3. `phase1-windows-runtime-smoke`
+4. `phase1-windows-runtime-smoke`
 - 한 줄 목표:
   - `ui_optional` Integration Test (Pre) 게이트를 자동 테스트 통과 기준으로 운영한다.
 - 근거 문서:
@@ -114,7 +137,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - Gate A(자동 테스트) 충족 시 pre-deploy pass
   - Integration Test (Pre) fail 사유(실기기 증적 미첨부 차단) 해소
 
-4. `phase1-test-harness-expansion`
+5. `phase1-test-harness-expansion`
 - 한 줄 목표:
   - 현재 단위 테스트 중심 체계를 서비스 통합 검증 중심으로 확장한다.
 - 근거 문서:
@@ -124,7 +147,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - 자동 테스트로 Gate A를 반복 실행 가능
   - 실패 케이스(DB 경로/OAuth 설정/갱신 주기) 재현 테스트 추가
 
-5. `phase1-oauth-live-provider-smoke`
+6. `phase1-oauth-live-provider-smoke`
 - 한 줄 목표:
   - 실 OAuth 공급자(staging 또는 운영 테스트 계정) 기준 로그인 성공/실패 경로를 검증한다.
 - 근거 문서:
@@ -134,7 +157,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - 콜백/토큰 저장/재시작 지속성 검증
   - 실패 시 민감정보가 로그에 남지 않음을 확인
 
-6. `phase1-release-readiness-windows`
+7. `phase1-release-readiness-windows`
 - 한 줄 목표:
   - 새 Windows 머신에서 문서만으로 무설치 실행을 재현 가능한 배포 준비 상태를 확보한다.
 - 근거 문서:
@@ -146,9 +169,9 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 
 ### 정렬 기준 (의존성/리스크)
 - 우선순위:
-  - `phase1-windows-frozen-path-compat` -> `phase1-windows-noinstall-smoke-evidence` -> `phase1-windows-runtime-smoke` -> `phase1-test-harness-expansion` -> `phase1-oauth-live-provider-smoke` -> `phase1-release-readiness-windows`
+  - `phase1-windows-frozen-path-compat` -> `phase1-windows-exe-build-artifact-delivery` -> `phase1-windows-noinstall-smoke-evidence` -> `phase1-windows-runtime-smoke` -> `phase1-test-harness-expansion` -> `phase1-oauth-live-provider-smoke` -> `phase1-release-readiness-windows`
 - 정렬 이유:
-  - frozen 경로 결함을 먼저 해결해야 실기기 증적과 통합게이트 재실행이 유효해진다.
+  - frozen 경로 결함 수정 직후 Windows `exe` 산출물을 먼저 고정해야 실기기 증적과 통합게이트 재실행이 같은 번들을 기준으로 검증된다.
 
 - Planning/Cycle 입력 하위 문서:
   - `./phases/Phase-1.md`
@@ -240,3 +263,27 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - Notion 본문이 2026-02-18 기준 스냅샷이라, 최신 운영 수치(예: `12 passed`)는 로컬 문서가 더 상세하다.
 - 다음 Cycle 전달사항:
   - `phase1-windows-frozen-path-compat` Coding 진입을 위해 cycle/planning 인덱스를 최신화한다.
+
+### Cycle 8 (2026-02-19 23:31)
+- 이번 변경:
+  - 사용자 요청(파이썬 기반 빌드에서 `exe` 아티팩트를 직접 제공 가능한지 확인)을 반영해 Big Picture 스냅샷에 빌드 책임/환경 제약을 명시했다.
+  - Task Candidate Backlog에 `phase1-windows-exe-build-artifact-delivery`를 추가해 Windows 빌드/체크섬/전달 증적을 독립 태스크로 분리했다.
+  - 현재 작업 환경에서 PowerShell(`pwsh`, `powershell`) 부재를 확인해 로컬 `exe` 빌드 불가 상태를 증적으로 기록했다.
+- 방향 변경:
+  - "현재 세션에서 즉시 exe 생성" 기대에서 "Windows 빌드 채널(로컬 또는 CI) 고정 후 아티팩트 전달" 방식으로 실행 전략을 전환한다.
+- 새 리스크:
+  - 전용 Windows 빌드 러너를 아직 고정하지 않으면 배포 후보 번들 생성이 사람 의존 프로세스로 남을 수 있음
+- 다음 Cycle 전달사항:
+  - Windows 빌드 채널(로컬 실기기/CI) 오너를 확정하고 첫 `AIUsageWatcher.exe` 산출물 + SHA-256 증적을 첨부한다.
+
+### Cycle 9 (2026-02-19 23:35)
+- 이번 변경:
+  - 사용자 실기기 오류(`Failed to load Python DLL ... _internal\\python312.dll`)를 Big Picture 스냅샷에 장애 이슈로 반영했다.
+  - 표준 산출물(`dist\\AIUsageWatcher`)과 다른 실행 경로(`build\\dist\\UsageWatcher`)를 신규 운영 리스크로 기록했다.
+  - `phase1-windows-exe-build-artifact-delivery` AC/DoD에 런타임 DLL 자동 보강/실패 처리와 런처 프리플라이트 가이드를 추가했다.
+- 방향 변경:
+  - 단순 "exe 생성 성공" 기준에서 "런타임 DLL 무결성 + 사용자 실행 전 진단 가능" 기준으로 완료 정의를 강화한다.
+- 새 리스크:
+  - OneDrive 온디맨드/백신 격리로 `_internal` DLL이 사후 누락될 경우, 빌드 성공 후에도 실행 실패가 재발할 수 있음
+- 다음 Cycle 전달사항:
+  - Windows 빌드 머신에서 보강된 빌드 스크립트를 실행해 DLL 검증 로그와 재현 스모크 결과를 증적으로 남긴다.

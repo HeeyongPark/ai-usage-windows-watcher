@@ -27,6 +27,59 @@ $BundleRoot = Join-Path $DistRoot $AppName
 $BuildWorkDir = Join-Path $DesktopRoot "build"
 $SpecPath = Join-Path $DesktopRoot "$AppName.spec"
 
+function Ensure-RuntimeDllSet {
+    param(
+        [string]$BundleRootPath,
+        [string]$BuildPythonPath
+    )
+
+    $bundleInternalDir = Join-Path $BundleRootPath "_internal"
+    $buildPythonDir = Split-Path -Parent $BuildPythonPath
+    $pythonDllName = (& $BuildPythonPath -c "import sys; print(f'python{sys.version_info.major}{sys.version_info.minor}.dll')" | Out-String).Trim()
+    if (-not $pythonDllName) {
+        throw "Unable to resolve Python DLL name from build interpreter."
+    }
+
+    $runtimeDllRules = @(
+        @{ Name = $pythonDllName; Required = $true },
+        @{ Name = "python3.dll"; Required = $true },
+        @{ Name = "vcruntime140.dll"; Required = $false },
+        @{ Name = "vcruntime140_1.dll"; Required = $false }
+    )
+
+    foreach ($rule in $runtimeDllRules) {
+        $dllName = $rule.Name
+        $dllRequired = [bool]$rule.Required
+
+        $bundleCandidates = @(
+            Join-Path $bundleInternalDir $dllName,
+            Join-Path $BundleRootPath $dllName
+        )
+        $bundleHit = $bundleCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+        if ($bundleHit) {
+            Write-Host "[check] runtime DLL present: $dllName"
+            continue
+        }
+
+        $sourceCandidate = Join-Path $buildPythonDir $dllName
+        if (Test-Path $sourceCandidate) {
+            if (-not (Test-Path $bundleInternalDir)) {
+                New-Item -ItemType Directory -Path $bundleInternalDir -Force | Out-Null
+            }
+            $targetPath = Join-Path $bundleInternalDir $dllName
+            Copy-Item -Path $sourceCandidate -Destination $targetPath -Force
+            Write-Host "[fixup] copied runtime DLL: $dllName"
+            continue
+        }
+
+        if ($dllRequired) {
+            throw "Required runtime DLL missing from bundle and build env: $dllName"
+        }
+
+        Write-Warning "Optional runtime DLL missing: $dllName (source: $sourceCandidate)"
+    }
+}
+
 if (-not (Test-Path $BuildPython)) {
     Write-Host "[build] Creating build virtualenv at $BuildVenv"
     & $PythonExe -m venv $BuildVenv
@@ -79,6 +132,8 @@ $CollectorInternal = Join-Path $BundleRoot "_internal\agent\src\collector.py"
 if (-not (Test-Path $CollectorFlat) -and -not (Test-Path $CollectorInternal)) {
     throw "Bundle agent path missing: collector.py was not found under flat or _internal layout."
 }
+
+Ensure-RuntimeDllSet -BundleRootPath $BundleRoot -BuildPythonPath $BuildPython
 
 $LauncherSource = Join-Path $DesktopRoot "scripts\run_ai_usage_watcher.bat"
 $LauncherTarget = Join-Path $BundleRoot "run_ai_usage_watcher.bat"

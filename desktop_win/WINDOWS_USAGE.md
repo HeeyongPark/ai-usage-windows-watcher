@@ -12,6 +12,7 @@
   - `AIUsageWatcher.exe`
   - `run_ai_usage_watcher.bat`
   - `.env.example`
+  - `_internal\python3*.dll` 및 `_internal\python3.dll` (또는 flat 동등 파일)
   - `_internal\agent\src\collector.py` 또는 `agent\src\collector.py`
 
 ### B. 직접 번들 생성 (빌드 머신)
@@ -38,8 +39,21 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build_windows_bundle.ps1
   - `AIUsageWatcher.exe`와 같은 폴더 아래 `_internal\.env`
 
 ## 4) 앱 실행 (무설치)
-- `AIUsageWatcher\run_ai_usage_watcher.bat` 더블클릭
+- `AIUsageWatcher\run_ai_usage_watcher.bat` 더블클릭 (권장)
 - 또는 `AIUsageWatcher\AIUsageWatcher.exe` 직접 실행
+
+### DLL 로드 오류 트러블슈팅
+- 오류 예시: `Failed to load Python DLL ... _internal\python312.dll`
+- 실행 위치를 먼저 확인:
+  - 표준 경로: `desktop_win\dist\AIUsageWatcher\run_ai_usage_watcher.bat`
+  - 비표준 경로(예: `desktop_win\build\dist\UsageWatcher\...`) 산출물은 사용하지 않음
+- OneDrive 경로에서 실행 중이면 폴더를 `Always keep on this device`로 고정
+- 번들 내 `_internal\python3*.dll`, `_internal\python3.dll` 존재를 확인
+- 누락 시 아래 명령으로 재빌드:
+```powershell
+cd C:\path\to\ai-usage-windows-watcher\desktop_win\
+powershell -ExecutionPolicy Bypass -File .\scripts\build_windows_bundle.ps1
+```
 
 ## 5) 기본 사용 순서
 1. `OAuth 로그인` 버튼 클릭
