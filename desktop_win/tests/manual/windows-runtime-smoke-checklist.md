@@ -2,27 +2,33 @@
 
 ## Scope
 - OS targets: Windows 10 (22H2+) and Windows 11
-- App target: `desktop_win/src/app.py`
+- App target: `desktop_win/dist/AIUsageWatcher/AIUsageWatcher.exe` (onedir bundle)
 - Required evidence:
   - runtime context JSON (`windows_runtime_probe.ps1`)
   - pass/fail checklist
   - screenshot or log for every failed step
 
 ## Run Metadata
+- Run id:
 - Run date (local):
 - Tester:
 - Machine:
 - OS version:
-- Python version:
+- Distribution mode: onedir
+- Bundle path:
+- Bundle layout: flat | _internal
+- Launcher path:
 - Screen resolution:
 - OAuth provider:
+- Runtime context path:
 
 ## Required Scenarios
-1. Install and launch
+1. No-install launch (onedir)
 - Step:
-  - Create venv in `agent`, install requirements, launch `python .\src\app.py`.
+  - Open `desktop_win\dist\AIUsageWatcher\run_ai_usage_watcher.bat` (or `AIUsageWatcher.exe`) on a machine without Python/Git installed.
 - Expected:
   - App window starts without traceback and shows dashboard UI.
+  - `ModuleNotFoundError: collector` 또는 유사 import 오류가 없다.
 - Result:
   - [ ] pass
   - [ ] fail
@@ -50,7 +56,7 @@
 
 4. Refresh interval guard
 - Step:
-  - Set `AUIW_REFRESH_INTERVAL_SEC=10` and relaunch.
+  - Set `AUIW_REFRESH_INTERVAL_SEC=10` in bundle `.env` and relaunch.
 - Expected:
   - App applies minimum guard (`60s`) and remains stable.
 - Result:
@@ -80,7 +86,7 @@
 
 ## Severity Rules
 - P0:
-  - App launch failure, OAuth login blocked, no data rendering
+  - Launcher/bundle app launch failure, OAuth login blocked, no data rendering
 - P1:
   - Refresh scheduler failure, budget status mismatch
 - P2:

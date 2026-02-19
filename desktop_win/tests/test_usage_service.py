@@ -14,6 +14,7 @@ for path in (str(DESKTOP_SRC), str(AGENT_SRC)):
 
 from collector import UsageCollector, UsageEvent, now_utc  # noqa: E402
 import storage  # noqa: E402
+import usage_service  # noqa: E402
 from usage_service import codex_daily_summary, codex_weekly_summary  # noqa: E402
 
 
@@ -86,3 +87,54 @@ def test_codex_weekly_summary_aggregates_codex_sessions(tmp_path: Path, monkeypa
     rows = codex_weekly_summary()
     assert len(rows) >= 1
     assert all(row["tool_name"] == "codex" for row in rows)
+
+
+def test_runtime_root_uses_meipass_first_when_frozen(monkeypatch, tmp_path: Path) -> None:
+    fake_executable = tmp_path / "dist" / "AIUsageWatcher" / "AIUsageWatcher.exe"
+    fake_meipass = tmp_path / "dist" / "AIUsageWatcher" / "_internal"
+    fake_executable.parent.mkdir(parents=True)
+    fake_meipass.mkdir(parents=True)
+    fake_executable.write_text("stub", encoding="utf-8")
+
+    monkeypatch.setattr(usage_service.sys, "frozen", True, raising=False)
+    monkeypatch.setattr(usage_service.sys, "executable", str(fake_executable))
+    monkeypatch.setattr(usage_service.sys, "_MEIPASS", str(fake_meipass), raising=False)
+
+    assert usage_service._runtime_root() == fake_meipass
+
+
+def test_runtime_root_falls_back_to_executable_when_meipass_missing(
+    monkeypatch, tmp_path: Path
+) -> None:
+    fake_executable = tmp_path / "dist" / "AIUsageWatcher" / "AIUsageWatcher.exe"
+    fake_executable.parent.mkdir(parents=True)
+    fake_executable.write_text("stub", encoding="utf-8")
+
+    monkeypatch.setattr(usage_service.sys, "frozen", True, raising=False)
+    monkeypatch.setattr(usage_service.sys, "executable", str(fake_executable))
+    monkeypatch.delattr(usage_service.sys, "_MEIPASS", raising=False)
+
+    assert usage_service._runtime_root() == fake_executable.parent
+
+
+def test_agent_src_path_from_runtime_root(tmp_path: Path) -> None:
+    runtime_root = tmp_path / "AIUsageWatcher"
+    expected = runtime_root / "agent" / "src"
+    assert usage_service._agent_src_path(runtime_root) == expected
+
+
+def test_resolve_agent_src_path_supports_internal_layout(
+    monkeypatch, tmp_path: Path
+) -> None:
+    fake_executable = tmp_path / "dist" / "AIUsageWatcher" / "AIUsageWatcher.exe"
+    fake_executable.parent.mkdir(parents=True)
+    fake_executable.write_text("stub", encoding="utf-8")
+    internal_agent_src = fake_executable.parent / "_internal" / "agent" / "src"
+    internal_agent_src.mkdir(parents=True)
+    (internal_agent_src / "collector.py").write_text("# stub", encoding="utf-8")
+
+    monkeypatch.setattr(usage_service.sys, "frozen", True, raising=False)
+    monkeypatch.setattr(usage_service.sys, "executable", str(fake_executable))
+    monkeypatch.delattr(usage_service.sys, "_MEIPASS", raising=False)
+
+    assert usage_service._resolve_agent_src_path() == internal_agent_src

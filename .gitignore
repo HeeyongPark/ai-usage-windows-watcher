@@ -11,6 +11,11 @@ venv/
 *.sqlite3
 *.log
 
+# Windows bundle build artifacts
+desktop_win/build/
+desktop_win/dist/
+desktop_win/*.spec
+desktop_win/.build-venv/
+
 # OS
 .DS_Store
-

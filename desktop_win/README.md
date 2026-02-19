@@ -9,6 +9,29 @@ Tkinter-based Windows desktop MVP.
 - Default fullscreen startup for small displays (5-inch monitor friendly).
 - Auto refresh every 1 hour by default.
 - Budget alert rule panel (daily/weekly token threshold).
+- Windows no-install `onedir` bundle build and launcher flow.
+
+## Run (no-install onedir bundle, recommended for users)
+PowerShell (Windows build machine):
+```powershell
+cd C:\path\to\ai-usage-windows-watcher\desktop_win\
+powershell -ExecutionPolicy Bypass -File .\scripts\build_windows_bundle.ps1
+```
+
+Bundle output:
+- `desktop_win\dist\AIUsageWatcher\`
+- main app: `AIUsageWatcher.exe`
+- launcher: `run_ai_usage_watcher.bat`
+- evidence helper: `collect_windows_smoke_evidence.bat`
+- evidence scripts: `prepare_windows_smoke_evidence.ps1`, `windows_runtime_probe.ps1`
+- evidence templates: `smoke_evidence\templates\*.md`
+- config template: `.env.example`
+- build script pins bundle layout to `_internal` and validates `collector.py` path
+
+End-user launch:
+- Double-click `run_ai_usage_watcher.bat`
+- For smoke evidence, double-click `collect_windows_smoke_evidence.bat`
+- Fill `.env` OAuth values before first login
 
 ## Run (development)
 ```bash
@@ -25,16 +48,41 @@ python src/app.py
 - See `/Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/WINDOWS_USAGE.md`
 
 ## Windows runtime smoke artifacts
+- One-click evidence collector (bundle root):
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/collect_windows_smoke_evidence.bat`
+- Evidence pack helper script:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/prepare_windows_smoke_evidence.ps1`
 - Runtime probe script:
   - `/Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/windows_runtime_probe.ps1`
+- Bundle build script:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/build_windows_bundle.ps1`
+- Launcher script:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/run_ai_usage_watcher.bat`
 - Manual checklist:
   - `/Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-smoke-checklist.md`
 - Evidence template:
   - `/Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-evidence-template.md`
 
+Quick start (Windows evidence pack):
+1) from onedir bundle root:
+```bat
+collect_windows_smoke_evidence.bat
+```
+
+2) from repository (build/dev machine):
+```powershell
+cd C:\path\to\ai-usage-windows-watcher\desktop_win\
+powershell -ExecutionPolicy Bypass -File .\scripts\prepare_windows_smoke_evidence.ps1 -BundleRoot .\dist\AIUsageWatcher
+```
+
 ## OAuth config
 Create `.env` from `.env.example` before launching.
-`src/app.py` auto-loads `desktop_win/.env`.
+`.env` loading behavior:
+- development mode: auto-load `desktop_win/.env`
+- bundled (`frozen`) mode: resolve in this order
+  - `sys._MEIPASS/.env`
+  - `AIUsageWatcher.exe` directory `.env`
+  - `AIUsageWatcher.exe` directory `_internal/.env`
 
 Required:
 - `AUIW_OAUTH_AUTH_URL`

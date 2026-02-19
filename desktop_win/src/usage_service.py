@@ -6,8 +6,49 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[2]
-AGENT_SRC = ROOT / "agent" / "src"
+
+def _dedupe_paths(paths: list[Path]) -> list[Path]:
+    unique: list[Path] = []
+    for path in paths:
+        if path not in unique:
+            unique.append(path)
+    return unique
+
+
+def _runtime_roots() -> list[Path]:
+    if getattr(sys, "frozen", False):
+        candidates: list[Path] = []
+        meipass = getattr(sys, "_MEIPASS", "")
+        if meipass:
+            candidates.append(Path(meipass).resolve())
+        executable_dir = Path(sys.executable).resolve().parent
+        candidates.append(executable_dir)
+        candidates.append(executable_dir / "_internal")
+        return _dedupe_paths(candidates)
+    return [Path(__file__).resolve().parents[2]]
+
+
+def _runtime_root() -> Path:
+    return _runtime_roots()[0]
+
+
+def _agent_src_path(root: Path) -> Path:
+    return root / "agent" / "src"
+
+
+def _resolve_agent_src_path() -> Path:
+    roots = _runtime_roots()
+
+    for root in roots:
+        candidate = _agent_src_path(root)
+        if (candidate / "collector.py").exists():
+            return candidate
+
+    return _agent_src_path(roots[0])
+
+
+ROOT = _runtime_root()
+AGENT_SRC = _resolve_agent_src_path()
 if str(AGENT_SRC) not in sys.path:
     sys.path.insert(0, str(AGENT_SRC))
 

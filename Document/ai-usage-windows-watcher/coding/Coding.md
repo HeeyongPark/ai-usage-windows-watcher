@@ -250,3 +250,398 @@
 ### 다음 핸드오프
 - To Review:
   - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+
+## Cycle 28 (2026-02-18 23:39)
+
+## 입력 요약
+- from_task:
+  - phase1-windows-noinstall-bundle
+- planning source:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-noinstall-bundle.md
+- 사용자 결정:
+  - onefile 제외, onedir 배포만 지원
+
+## 설계 개요
+- Windows 빌드 머신에서 PyInstaller onedir 결과물을 생성하는 스크립트를 추가한다.
+- 번들 폴더에서 더블클릭 실행 가능한 런처 배치 파일을 추가한다.
+- 번들 런타임(`frozen`)에서도 agent 모듈/`.env`를 올바르게 찾도록 경로 해석 로직을 보강한다.
+- 운영 문서와 실기기 체크리스트를 onedir 기준으로 갱신한다.
+
+## 원칙 적용 체크
+- KISS:
+  - PyInstaller onedir + 단일 런처 `.bat` 조합으로 최소 경로를 제공
+- YAGNI:
+  - MSI/MSIX, onefile 최적화, 코드서명 자동화는 범위에서 제외
+- DRY:
+  - 경로 계산 로직을 `usage_service`/`env_loader`에 함수화
+- SOLID:
+  - 런타임 경로 결정 책임을 헬퍼 함수로 분리해 테스트 가능성 확보
+
+## 작업 분해
+- 작업 1:
+  - `desktop_win/scripts/build_windows_bundle.ps1` 추가 (onedir 번들 빌드)
+- 작업 2:
+  - `desktop_win/scripts/run_ai_usage_watcher.bat` 추가 (무설치 실행 런처)
+- 작업 3:
+  - `desktop_win/src/usage_service.py`, `desktop_win/src/env_loader.py` 런타임 경로 보강
+- 작업 4:
+  - `desktop_win/README.md`, `desktop_win/WINDOWS_USAGE.md`, 수동 검증 문서 갱신
+- 작업 5:
+  - 테스트 보강 (`desktop_win/tests/test_usage_service.py`, `desktop_win/tests/test_env_loader.py`)
+
+## 변경 파일/모듈
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/build_windows_bundle.ps1
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/run_ai_usage_watcher.bat
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/usage_service.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/env_loader.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/README.md
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/WINDOWS_USAGE.md
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-smoke-checklist.md
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-evidence-template.md
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/test_usage_service.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/test_env_loader.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/.gitignore
+
+## 의존성/통합 포인트
+- 빌드 의존성:
+  - `pyinstaller==6.11.1` (빌드 시점 설치)
+- 런타임 통합:
+  - onedir 번들 내부 `agent/src`, `agent/sql` 데이터 경로 사용
+  - 번들 루트 `.env` 자동 로드
+
+## 테스트 전략
+- 자동:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q`
+  - `python3 -m py_compile /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/*.py /Users/mirador/Documents/ai-usage-windows-watcher/agent/src/*.py`
+- 수동(Windows):
+  - `build_windows_bundle.ps1` 실행 후 `dist\AIUsageWatcher\run_ai_usage_watcher.bat` 실행 확인
+  - 무설치 런처/onedir 폴더 누락 실패 시나리오 확인
+
+## 일정
+- Coding 완료 후 즉시 Review 요청
+
+## 리스크와 대응
+- 리스크:
+  - macOS 환경에서는 PowerShell 빌드 스크립트 실행 검증 불가
+  - 대응:
+    - Review에서 Windows 실행 증적 확보를 명시
+- 리스크:
+  - SmartScreen 경고로 사용자 혼란 가능
+  - 대응:
+    - 운영 가이드에 경고 대응 절차를 명시
+
+## 오픈 이슈
+- 코드서명/배포 해시 검증 자동화는 Phase 2로 이관
+
+## Handoff To Review
+- 검토 대상 범위:
+  - onedir 번들 빌드/런처 경로, frozen 런타임 경로 안전성, 문서 정합성
+- 핵심 변경 파일/모듈:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/build_windows_bundle.ps1
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/run_ai_usage_watcher.bat
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/usage_service.py
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/env_loader.py
+- 테스트 결과/검증 포인트:
+  - pytest/py_compile 결과
+  - Windows 실기기에서 onedir 실행 증적 필요
+- 잔여 리스크:
+  - Windows 빌드/실행 실증 미첨부 시 조건부 판정 가능
+- 입력 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-noinstall-bundle.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/coding/Coding.md
+- 참고 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/WINDOWS_USAGE.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-smoke-checklist.md
+- 출력 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+
+## Cycle 33 (2026-02-19 17:52)
+
+## 입력 요약
+- from_task:
+  - phase1-windows-frozen-path-compat
+- planning source:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-frozen-path-compat.md
+- 목표:
+  - frozen 런타임 경로 우선순위(`sys._MEIPASS` -> exe dir -> `_internal`)를 코드/빌드/문서에 일관되게 반영
+
+## 설계 개요
+- `usage_service`와 `env_loader`에 동일한 경로 후보 우선순위를 도입하고, 실제 파일 존재(`collector.py`, `.env`) 기반으로 최종 경로를 선택한다.
+- 빌드 스크립트에서 PyInstaller onedir `--contents-directory "_internal"`을 명시해 산출물 구조를 고정한다.
+- 런처에서 번들 레이아웃(flat/`_internal`)을 사전 검증해 실행 전 결함을 빠르게 안내한다.
+
+## 원칙 적용 체크
+- KISS:
+  - 경로 후보 3개를 순서대로 평가하는 단순 규칙으로 구현
+- YAGNI:
+  - onefile/MSI/MSIX/코드서명 자동화는 범위에서 제외
+- DRY:
+  - 두 모듈에서 동일한 런타임 루트 탐색 패턴을 사용
+- SOLID:
+  - 경로 결정 함수를 분리해 단위 테스트에서 frozen 케이스를 직접 검증
+
+## 작업 분해
+- 작업 1:
+  - `usage_service.py` frozen 경로 해석 로직 보강
+- 작업 2:
+  - `env_loader.py` `.env` 탐색 우선순위 보강
+- 작업 3:
+  - `_MEIPASS`/`_internal` 레이아웃 검증 테스트 추가
+- 작업 4:
+  - 빌드/런처 스크립트에 레이아웃 검증 및 안내 메시지 추가
+- 작업 5:
+  - README/WINDOWS_USAGE/증적 템플릿 정합성 갱신
+
+## 변경 파일/모듈
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/usage_service.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/env_loader.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/test_usage_service.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/test_env_loader.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/build_windows_bundle.ps1
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/run_ai_usage_watcher.bat
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/README.md
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/WINDOWS_USAGE.md
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-evidence-template.md
+
+## 의존성/통합 포인트
+- 런타임:
+  - frozen 경로에서 `agent/src/collector.py` 탐색 가능 여부
+- 빌드:
+  - PyInstaller onedir `_internal` 구조 고정
+- 문서:
+  - 운영자 가이드와 실제 런처 검증 기준 동기화
+
+## 테스트 전략
+- 자동:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q`
+  - `python3 -m py_compile /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/*.py /Users/mirador/Documents/ai-usage-windows-watcher/agent/src/*.py /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/*.py`
+- 수동(Windows):
+  - `build_windows_bundle.ps1` 실행 후 레이아웃 출력 확인
+  - `run_ai_usage_watcher.bat`로 번들 레이아웃 감지 메시지 확인
+
+## 일정
+- Coding 완료, 다음 단계 Review 요청
+
+## 리스크와 대응
+- 리스크:
+  - macOS 환경에서는 PowerShell 스크립트 실실행 검증이 불가
+  - 대응:
+    - Windows 실기기에서 번들 빌드/런처 실행 증적을 Review 게이트로 요구
+- 리스크:
+  - Notion 문서와 로컬 운영 수치의 시점 차이
+  - 대응:
+    - Cycle/Planning 최신 문서를 기준으로 게이트 판단
+
+## 오픈 이슈
+- SmartScreen/백신 오탐 대응(코드서명)은 후속 태스크(`phase1-windows-noinstall-smoke-evidence`)에서 증적 기반으로 정리
+
+## Handoff To Review
+- 검토 대상 범위:
+  - frozen 런타임 경로 선택 우선순위와 `_internal` 레이아웃 호환성
+  - 빌드/런처 사전 검증 메시지의 운영 적합성
+- 핵심 변경 파일/모듈:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/usage_service.py
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/env_loader.py
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/build_windows_bundle.ps1
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/run_ai_usage_watcher.bat
+- 테스트 결과/검증 포인트:
+  - `15 passed`
+  - py_compile 오류 없음
+- 잔여 리스크:
+  - Windows 실기기 번들 실행 증적은 아직 미첨부(후속 task)
+- 입력 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-frozen-path-compat.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/coding/Coding.md
+- 참고 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/WINDOWS_USAGE.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-smoke-checklist.md
+- 출력 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+
+## Cycle 37 (2026-02-19 20:03)
+
+## 입력 요약
+- from_task:
+  - phase1-windows-noinstall-smoke-evidence
+- planning source:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-noinstall-smoke-evidence.md
+- 목표:
+  - Win10/Win11 실기기 스모크 증적 누락을 줄이기 위해 run-id 기반 증적 생성 흐름을 스크립트/문서에 반영
+
+## 설계 개요
+- 기존 `windows_runtime_probe.ps1`를 확장해 번들 메타데이터(레이아웃/핵심 파일 존재/sha256)를 함께 수집한다.
+- 신규 `prepare_windows_smoke_evidence.ps1`를 추가해 증적 세트(runtime context/checklist/evidence)를 run-id 기준으로 자동 생성한다.
+- 운영 문서/체크리스트/증적 템플릿을 run-id 기반 artifact 흐름으로 정렬한다.
+
+## 원칙 적용 체크
+- KISS:
+  - 실기기에서 한 번의 스크립트 호출로 증적 기본 세트를 생성
+- YAGNI:
+  - 수동 시나리오 자체 자동화는 제외하고 증적 생성 보조에 집중
+- DRY:
+  - 경로 해석 유틸리티를 PowerShell 스크립트 내 공통 함수로 재사용
+- SOLID:
+  - 런타임 수집(`probe`)과 증적 패키징(`prepare`) 책임을 분리
+
+## 작업 분해
+- 작업 1:
+  - `desktop_win/scripts/windows_runtime_probe.ps1` 메타데이터 확장
+- 작업 2:
+  - `desktop_win/scripts/prepare_windows_smoke_evidence.ps1` 신규 추가
+- 작업 3:
+  - 체크리스트/증적 템플릿 run-id 필드 보강
+- 작업 4:
+  - Windows 운영 문서와 README에 실행 절차 반영
+
+## 변경 파일/모듈
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/windows_runtime_probe.ps1
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/prepare_windows_smoke_evidence.ps1
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-smoke-checklist.md
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-evidence-template.md
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/WINDOWS_USAGE.md
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/README.md
+
+## 의존성/통합 포인트
+- PowerShell 실행 환경:
+  - Windows 실기기에서 `prepare_windows_smoke_evidence.ps1` 실행 필요
+- 기존 런타임 점검 흐름:
+  - `windows_runtime_probe.ps1`를 단독 실행/패키지 실행 모두 지원
+
+## 테스트 전략
+- 자동:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q`
+  - `python3 -m py_compile /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/*.py /Users/mirador/Documents/ai-usage-windows-watcher/agent/src/*.py /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/*.py`
+- 수동(Windows):
+  - `prepare_windows_smoke_evidence.ps1` 실행 후 artifact 3종 생성 확인
+
+## 일정
+- Coding 완료, 다음 단계 Review 요청
+
+## 리스크와 대응
+- 리스크:
+  - 현재 개발 환경(macOS)에서는 PowerShell 실실행 검증 불가
+  - 대응:
+    - Review에서 Win10/Win11 실기기 실행 증적을 필수 게이트로 유지
+
+## 오픈 이슈
+- SmartScreen/백신 경고 대응의 운영 문구 확정은 실기기 증적 확보 후 후속 정리
+
+## Handoff To Review
+- 검토 대상 범위:
+  - 증적 수집 자동화 스크립트 품질과 문서 정합성
+- 핵심 변경 파일/모듈:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/windows_runtime_probe.ps1
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/prepare_windows_smoke_evidence.ps1
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/WINDOWS_USAGE.md
+- 테스트 결과/검증 포인트:
+  - `15 passed`
+  - py_compile 오류 없음
+  - `pwsh not found`로 로컬 PowerShell 실행 검증은 미수행
+- 잔여 리스크:
+  - Win10/Win11 실기기 artifact 미첨부
+- 입력 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-noinstall-smoke-evidence.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/coding/Coding.md
+- 참고 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-smoke-checklist.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-evidence-template.md
+- 출력 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+
+## Cycle 40 (2026-02-19 21:57)
+
+## 입력 요약
+- from_task:
+  - phase1-windows-noinstall-smoke-evidence
+- planning source:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-noinstall-smoke-evidence.md
+- 목표:
+  - 저장소 경로 없이 onedir 번들 폴더만으로 run-id 증적 세트를 생성할 수 있게 증적 수집 UX를 보강한다.
+
+## 설계 개요
+- `prepare_windows_smoke_evidence.ps1`/`windows_runtime_probe.ps1`를 repo 모드 + bundle 단독 모드 모두 지원하도록 확장한다.
+- 번들 루트에서 더블클릭 가능한 `collect_windows_smoke_evidence.bat`를 추가해 PowerShell 명령 입력 부담을 제거한다.
+- 번들 빌드 시 증적 스크립트/템플릿을 함께 복사해 운영자가 추가 파일 없이 실행할 수 있게 한다.
+
+## 원칙 적용 체크
+- KISS:
+  - 번들 루트에서 `collect_windows_smoke_evidence.bat` 1회 실행으로 기본 증적 세트 생성
+- YAGNI:
+  - 수동 시나리오(로그인/데이터 확인) 자체 자동화는 제외
+- DRY:
+  - 경로 해석 함수를 PowerShell 스크립트 공통 패턴으로 정리
+- SOLID:
+  - 런타임 탐지/컨텍스트 수집(`probe`)과 증적 패키징(`prepare`) 책임 분리 유지
+
+## 작업 분해
+- 작업 1:
+  - `prepare_windows_smoke_evidence.ps1`의 템플릿/출력 경로를 bundle 모드까지 확장
+- 작업 2:
+  - `windows_runtime_probe.ps1`에 bundle 모드 기본 경로(`smoke_evidence/artifacts`)와 번들 메타데이터 수집 유지
+- 작업 3:
+  - `collect_windows_smoke_evidence.bat` 신규 추가(원클릭 증적 수집)
+- 작업 4:
+  - `build_windows_bundle.ps1`에서 증적 스크립트/템플릿을 번들에 동봉
+- 작업 5:
+  - `README.md`, `WINDOWS_USAGE.md`, 증적 템플릿의 실행 경로 안내 갱신
+
+## 변경 파일/모듈
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/prepare_windows_smoke_evidence.ps1
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/windows_runtime_probe.ps1
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/collect_windows_smoke_evidence.bat
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/build_windows_bundle.ps1
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/README.md
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/WINDOWS_USAGE.md
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-evidence-template.md
+
+## 의존성/통합 포인트
+- Windows onedir 번들:
+  - `collect_windows_smoke_evidence.bat` -> `prepare_windows_smoke_evidence.ps1` -> `windows_runtime_probe.ps1` 체인
+- artifact 경로:
+  - 번들 모드: `smoke_evidence/artifacts/*`
+  - 저장소 모드: `tests/manual/artifacts/*`
+
+## 테스트 전략
+- 자동:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q`
+  - `python3 -m py_compile /Users/mirador/Documents/ai-usage-windows-watcher/agent/src/*.py /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/*.py /Users/mirador/Documents/ai-usage-windows-watcher/agent/tests/*.py /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/*.py`
+- 수동(Windows):
+  - `dist\AIUsageWatcher\collect_windows_smoke_evidence.bat` 실행 후 artifact 3종 생성 확인
+
+## 일정
+- Coding 완료, 다음 단계 Review 요청
+
+## 리스크와 대응
+- 리스크:
+  - macOS 환경에서는 PowerShell 스크립트 실실행 검증이 불가
+  - 대응:
+    - Integration Test (Pre)에서 Win10/Win11 실기기 artifact 첨부를 게이트로 유지
+- 리스크:
+  - 번들만 전달받은 운영자가 run-id 네이밍 규칙을 생략할 가능성
+  - 대응:
+    - 스크립트 기본 run-id 자동 생성 + 문서에 수동 지정 예시 병기
+
+## 오픈 이슈
+- SmartScreen/코드서명 정책은 실기기 배포 피드백 수집 후 후속 태스크로 분리
+
+## Handoff To Review
+- 검토 대상 범위:
+  - 번들 단독 증적 수집 흐름의 경로 해석/실행 가능성
+- 핵심 변경 파일/모듈:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/prepare_windows_smoke_evidence.ps1
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/windows_runtime_probe.ps1
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/collect_windows_smoke_evidence.bat
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/build_windows_bundle.ps1
+- 테스트 결과/검증 포인트:
+  - `15 passed in 0.09s`
+  - py_compile 오류 없음
+- 잔여 리스크:
+  - Windows 실기기에서 번들 스크립트 실행 증적 미첨부
+- 입력 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-noinstall-smoke-evidence.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/coding/Coding.md
+- 참고 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/WINDOWS_USAGE.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-evidence-template.md
+- 출력 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md

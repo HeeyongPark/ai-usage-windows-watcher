@@ -278,3 +278,278 @@
   - pass (조건부)
 - 다음 단계:
   - Integration Test (Pre)
+
+## Review Request (2026-02-18 23:58)
+- 대상 태스크:
+  - phase1-windows-noinstall-bundle
+- 검토 범위:
+  - onedir 번들 빌드 스크립트와 실제 frozen 런타임 경로 정합성
+  - 무설치 런처/운영 문서와 코드 경로 해석 일치 여부
+- 핵심 파일:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/build_windows_bundle.ps1
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/usage_service.py
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/env_loader.py
+
+## Review Result (2026-02-18 23:58) - phase1-windows-noinstall-bundle
+
+### 검토 범위
+- Planning/Coding 산출물 정합성
+- PyInstaller onedir 결과물 구조와 런타임 import 경로 안전성
+- 무설치 실행 경로의 재현 가능성
+
+### 문서 비교 결과
+- Planning -> Coding 누락 항목:
+  - 없음(빌드/런처/문서/테스트 항목 모두 반영)
+- Coding -> Planning 역추적 불가 항목:
+  - 없음
+
+### 보수 검토 체크리스트
+- AC 충족 여부:
+  - 부분 충족(문서/스크립트/테스트 추가는 완료)
+- 성능/리소스 병목 가능성:
+  - 중간(onedir 번들 용량 증가 가능)
+- 오류 처리/예외 케이스 누락:
+  - 있음(frozen 런타임 경로 차이 처리 불충분 가능성)
+- 테스트 전략의 빈틈:
+  - 있음(Windows 실기기 번들 실행 증적 없음)
+- 기술 부채 또는 과설계 위험:
+  - 낮음
+- 배포 준비 상태:
+  - 미충족(실행 실패 가능성 해소 전)
+
+### 발견 사항
+- 결함(Blocking): 1건
+  - [P1] `usage_service.py`가 `sys.executable` 부모 기준 `agent/src`만 탐색하는데, PyInstaller onedir 기본 구조(`_internal`)에서는 import 실패 가능
+- 확인 증적:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q`
+  - 결과: `12 passed` (비-frozen 경로만 검증)
+
+### 리스크/우려
+- frozen 환경에서 `collector` import 실패 시 무설치 실행 목표가 직접적으로 실패한다.
+
+### 되돌림 가이드
+- Planning으로 되돌릴 항목:
+  - frozen 런타임 경로 탐색 전략 확정(`sys._MEIPASS`/`_internal`/exe dir 호환)
+  - 빌드 스크립트 산출물 구조를 코드와 명시적으로 일치
+- Coding으로 되돌릴 항목:
+  - 없음(재계획 확정 후 실행)
+
+### 배포 게이트 판정
+- Integration Test 진행 가능:
+  - 불가(결함 수정 전)
+- 선행 보완 필요 항목:
+  - 경로 전략 재계획 + Windows 실기기 번들 실행 증적
+
+### 결정/후속 조치
+- Review 판정:
+  - fail (planning return)
+- 다음 단계:
+  - Planning (single task) 재진입
+
+## Review Request (2026-02-19 19:53)
+- 대상 태스크:
+  - phase1-windows-frozen-path-compat
+- 검토 범위:
+  - frozen 런타임 경로 우선순위(`_MEIPASS`/exe dir/`_internal`) 적용 여부
+  - onedir 빌드/런처 스크립트와 런타임 경로 전략 정합성
+  - 테스트/운영 문서 업데이트와 계획 대비 누락 여부
+- 핵심 파일:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/usage_service.py
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/env_loader.py
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/build_windows_bundle.ps1
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/run_ai_usage_watcher.bat
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/test_usage_service.py
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/test_env_loader.py
+
+## Review Result (2026-02-19 19:53) - phase1-windows-frozen-path-compat
+
+### 검토 범위
+- Planning/Coding 산출물 정합성
+- frozen/onedir 경로 해석과 빌드 산출물 구조 일치 여부
+- 자동 테스트 증적 최신화 여부
+
+### 문서 비교 결과
+- Planning -> Coding 누락 항목:
+  - 없음(경로 우선순위, 빌드/런처 검증, 테스트/문서 갱신 항목 반영 확인)
+- Coding -> Planning 역추적 불가 항목:
+  - 없음
+
+### 보수 검토 체크리스트
+- AC 충족 여부:
+  - 충족(경로 우선순위와 `_internal` 호환 로직 반영)
+- 성능/리소스 병목 가능성:
+  - 낮음(경로 탐색은 앱 시작 시 소규모 파일 존재 확인만 수행)
+- 오류 처리/예외 케이스 누락:
+  - 낮음(런처에서 런타임 경로 누락 시 즉시 안내 후 중단)
+- 테스트 전략의 빈틈:
+  - 있음(Windows 실기기에서 onedir 빌드/런처 실실행 증적은 아직 없음)
+- 기술 부채 또는 과설계 위험:
+  - 낮음
+- 배포 준비 상태:
+  - 부분 충족(코드/테스트는 준비 완료, 실기기 증적은 후속 태스크 필요)
+
+### 발견 사항
+- 결함(Blocking): 0건
+- 확인 증적:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q`
+  - 결과: `15 passed`
+  - `python3 -m py_compile ...` 오류 없음
+
+### 리스크/우려
+- Windows 실기기에서 번들 생성/실행 증적이 없으면 런처 경고/SmartScreen 대응 품질을 최종 확정하기 어렵다.
+
+### 되돌림 가이드
+- Planning으로 되돌릴 항목:
+  - 없음
+- Coding으로 되돌릴 항목:
+  - 없음
+
+### 배포 게이트 판정
+- Integration Test 진행 가능:
+  - 가능(조건부)
+- 선행 보완 필요 항목:
+  - Win10/Win11 onedir 실행 증적(`phase1-windows-noinstall-smoke-evidence`) 확보
+
+### 결정/후속 조치
+- Review 판정:
+  - pass (조건부)
+- 다음 단계:
+  - Cycle Manager에서 `phase1-windows-noinstall-smoke-evidence`를 다음 실행 대상으로 승격
+
+## Review Request (2026-02-19 21:30)
+- 대상 태스크:
+  - phase1-windows-noinstall-smoke-evidence
+- 검토 범위:
+  - run-id 기반 증적 생성 스크립트(`prepare_windows_smoke_evidence.ps1`)의 안정성
+  - `windows_runtime_probe.ps1` 메타데이터 확장과 증적 템플릿/운영 문서 정합성
+  - Planning/Coding 대비 누락/회귀 여부
+- 핵심 파일:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/prepare_windows_smoke_evidence.ps1
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/windows_runtime_probe.ps1
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-smoke-checklist.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/manual/windows-runtime-evidence-template.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/WINDOWS_USAGE.md
+
+## Review Result (2026-02-19 21:30) - phase1-windows-noinstall-smoke-evidence
+
+### 검토 범위
+- Planning/Coding 산출물 정합성
+- 증적 수집 스크립트의 경로/출력 일관성
+- 자동 테스트 증적 최신화 여부
+
+### 문서 비교 결과
+- Planning -> Coding 누락 항목:
+  - 없음(run-id 기반 증적 세트 생성, 문서/템플릿 갱신 반영 확인)
+- Coding -> Planning 역추적 불가 항목:
+  - 없음
+
+### 보수 검토 체크리스트
+- AC 충족 여부:
+  - 충족(증적 생성 스크립트/템플릿/운영 절차가 계획 범위를 충족)
+- 성능/리소스 병목 가능성:
+  - 낮음(실행 시 파일 복사 + JSON 생성 중심)
+- 오류 처리/예외 케이스 누락:
+  - 낮음(템플릿 누락/런타임 컨텍스트 생성 실패 시 명시적 오류 처리)
+- 테스트 전략의 빈틈:
+  - 있음(macOS 환경에서 PowerShell 실실행 검증 불가)
+- 기술 부채 또는 과설계 위험:
+  - 낮음
+- 배포 준비 상태:
+  - 부분 충족(코드/문서는 준비 완료, Win10/Win11 실기기 실행 증적 필요)
+
+### 발견 사항
+- 결함(Blocking): 0건
+- 확인 증적:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q`
+  - 결과: `15 passed`
+  - `python3 -m py_compile ...` 오류 없음
+
+### 리스크/우려
+- 실기기(Win10/Win11)에서 `prepare_windows_smoke_evidence.ps1` 실행 결과를 아직 첨부하지 않아 Gate B/C 최종 판정은 보류다.
+
+### 되돌림 가이드
+- Planning으로 되돌릴 항목:
+  - 없음
+- Coding으로 되돌릴 항목:
+  - 없음
+
+### 배포 게이트 판정
+- Integration Test 진행 가능:
+  - 가능(조건부)
+- 선행 보완 필요 항목:
+  - Win10/Win11에서 run-id artifact 1세트 이상 수집 후 첨부
+
+### 결정/후속 조치
+- Review 판정:
+  - pass (조건부)
+- 다음 단계:
+  - Cycle Manager에서 `phase1-windows-runtime-smoke`를 integration_test_pre 대상으로 재승격
+
+## Review Request (2026-02-19 21:57)
+- 대상 태스크:
+  - phase1-windows-noinstall-smoke-evidence
+- 검토 범위:
+  - 번들 단독 실행 기준 증적 수집 흐름(`collect_windows_smoke_evidence.bat`) 추가
+  - `prepare_windows_smoke_evidence.ps1`/`windows_runtime_probe.ps1`의 repo+bundle 듀얼 모드 경로 정합성
+  - 번들 빌드 산출물에 증적 스크립트/템플릿 포함 여부
+- 핵심 파일:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/collect_windows_smoke_evidence.bat
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/prepare_windows_smoke_evidence.ps1
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/windows_runtime_probe.ps1
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/build_windows_bundle.ps1
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/WINDOWS_USAGE.md
+
+## Review Result (2026-02-19 21:57) - phase1-windows-noinstall-smoke-evidence
+
+### 검토 범위
+- Planning/Coding 산출물 정합성
+- 번들 단독 증적 수집 UX와 경로 해석 안전성
+- 자동 테스트 회귀 여부
+
+### 문서 비교 결과
+- Planning -> Coding 누락 항목:
+  - 없음(증적 생성 절차 스크립트화/문서화 요구를 충족)
+- Coding -> Planning 역추적 불가 항목:
+  - 없음
+
+### 보수 검토 체크리스트
+- AC 충족 여부:
+  - 충족(번들 루트 원클릭 증적 수집 경로 추가)
+- 성능/리소스 병목 가능성:
+  - 낮음(파일 복사 + JSON 생성 중심)
+- 오류 처리/예외 케이스 누락:
+  - 낮음(스크립트/템플릿/실행파일 누락 시 명시적 에러 처리)
+- 테스트 전략의 빈틈:
+  - 있음(Windows 실기기에서 BAT/PowerShell 체인 실실행 증적은 아직 없음)
+- 기술 부채 또는 과설계 위험:
+  - 낮음
+- 배포 준비 상태:
+  - 부분 충족(코드/문서 준비 완료, 실기기 증적 필요)
+
+### 발견 사항
+- 결함(Blocking): 0건
+- 확인 증적:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q`
+  - 결과: `15 passed in 0.09s`
+  - `python3 -m py_compile ...` 오류 없음
+
+### 리스크/우려
+- Win10/Win11 실기기에서 `collect_windows_smoke_evidence.bat` 실행 산출물이 첨부되지 않으면 Integration Test (Pre) `ui_required` 게이트를 닫을 수 없다.
+
+### 되돌림 가이드
+- Planning으로 되돌릴 항목:
+  - 없음
+- Coding으로 되돌릴 항목:
+  - 없음
+
+### 배포 게이트 판정
+- Integration Test 진행 가능:
+  - 가능(조건부)
+- 선행 보완 필요 항목:
+  - Win10/Win11 각 1회 `collect_windows_smoke_evidence.bat` 또는 `prepare_windows_smoke_evidence.ps1` 실행 artifact 첨부
+
+### 결정/후속 조치
+- Review 판정:
+  - pass (조건부)
+- 다음 단계:
+  - Integration Test (Pre) 재실행 전 Windows 실기기 artifact 수집

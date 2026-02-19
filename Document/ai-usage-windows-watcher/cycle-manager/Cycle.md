@@ -11,22 +11,31 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 ## Pipeline Order
 - Big Picture -> Cycle Manager -> Planning -> Coding -> Review -> Integration Test (Pre) -> Git Release -> Deploy -> Integration Test (Post)
 
-## Project Scope Override (2026-02-18)
+## Project Scope Override (2026-02-19)
 - terminal_stage: git_release
 - excluded_stages_this_project:
   - deploy
   - integration_test_post
+- integration_test_pre_override:
+  - 기본 프로파일: `ui_optional`
+  - 판정 기준: 자동 테스트(`pytest`, `py_compile`) 통과 시 pass
+  - Windows 실기기 수동 스모크 증적: 권장(비차단)
+- git_release_trigger_override:
+  - Integration Test (Pre) pass 즉시 git_release 진행 가능
+  - 본 프로젝트에서는 "테스트 통과 시 push"를 표준으로 적용
 - completion_rule:
   - Review 통과 + Integration Test (Pre) 통과 + Git Release 완료 시 `done` 처리
 
 ## Active Queue
-1. [integration_test_pre] phase1-windows-runtime-smoke :: Windows 실기기 스모크 검증
+1. [git_release] phase1-windows-runtime-smoke :: 자동 테스트 통과 기준 pre-deploy pass, push 대기
 2. [queued] phase1-test-harness-expansion :: 테스트 하네스 확장
 3. [queued] phase1-oauth-live-provider-smoke :: OAuth 실공급자 스모크
-4. [queued] phase1-release-readiness-windows :: 신규 Windows 머신 재현 설치 검증
+4. [queued] phase1-release-readiness-windows :: 신규 Windows 머신 무설치 실행 재현 검증
 5. [done] phase1-win-agent-usage-collector :: Windows 사용량 수집기 에이전트 MVP
 6. [done] phase1-desktop-dashboard :: 로컬 대시보드 MVP
 7. [done] phase1-budget-alert-rule :: 예산 임계치 알림 규칙
+8. [done] phase1-windows-frozen-path-compat :: Windows frozen 경로 호환성 보강
+9. [done] phase1-windows-noinstall-smoke-evidence :: 무설치 증적 수집 자동화 보강
 
 ## Stage Board (Latest)
 - queued:
@@ -37,14 +46,16 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - coding:
 - review:
 - integration_test_pre:
-  - phase1-windows-runtime-smoke
 - git_release:
+  - phase1-windows-runtime-smoke
 - deploy:
 - integration_test_post:
 - done:
   - phase1-win-agent-usage-collector
   - phase1-desktop-dashboard
   - phase1-budget-alert-rule
+  - phase1-windows-frozen-path-compat
+  - phase1-windows-noinstall-smoke-evidence
 - blocked:
 
 ## Cycle 1 (2026-02-18 16:03)
@@ -991,3 +1002,741 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - Integration Test (Pre) 재실행
 - 담당 스킬:
   - integration-test-pre
+
+## Cycle 26 (2026-02-18 23:33)
+
+### 입력
+- Big Picture 소스:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/big-picture/BigPicture.md
+- 사용자 요청:
+  - Windows에서 별도 설치/터미널 명령 없이 실행 가능한 경로 추가
+- 이전 사이클 carry-over:
+  - phase1-windows-runtime-smoke (integration_test_pre 재실행 대기)
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 현재 개발자 설치 경로(venv/pip)는 일반 사용자 기준 진입 장벽이 높다.
+- 방향:
+  - 무설치 실행 요구를 Big Picture에 반영하고 신규 태스크를 즉시 planning으로 승격한다.
+- 고민거리:
+  - 번들 방식(onefile/onedir) 선택과 코드 서명 부재 시 배포 신뢰도 확보 방법
+
+### 상태 전이
+- before:
+  - phase1-windows-noinstall-bundle: 없음(new)
+- after:
+  - phase1-windows-noinstall-bundle: planning
+- 전이 이유:
+  - 범위/목표 변경 트리거에 해당하며, 사용자 요청으로 신규 태스크를 생성해 우선순위를 상향했다.
+
+### Handoff To Planning (단일 태스크)
+- task-id:
+  - phase1-windows-noinstall-bundle
+- 입력:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/cycle-manager/Cycle.md
+- 출력:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-noinstall-bundle.md
+
+### 리스크 및 블로커
+- 리스크:
+  - 번들 용량 증가, 백신 오탐, 런타임 누락으로 초기 실행 실패 가능성
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Planning (single task)
+- 담당 스킬:
+  - planning
+
+## Cycle 27 (2026-02-18 23:39)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-noinstall-bundle
+- 사용자 결정:
+  - onefile은 필요 없음, onedir(원 폴더) 방식으로 고정
+- 이전 사이클 carry-over:
+  - phase1-windows-noinstall-bundle (planning 진행 중)
+  - phase1-windows-runtime-smoke (integration_test_pre 재실행 대기)
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 번들 형식 의사결정이 완료되어 Planning 오픈 이슈가 해소되었다.
+- 방향:
+  - Phase 1 무설치 실행 산출물을 onedir 기준으로 설계/검증한다.
+- 고민거리:
+  - 코드 서명 미적용 상태에서 SmartScreen 경고 대응 가이드를 어떤 깊이로 문서화할지
+
+### 상태 전이
+- before:
+  - phase1-windows-noinstall-bundle: planning
+- after:
+  - phase1-windows-noinstall-bundle: planning
+- 전이 이유:
+  - 사용자 의사결정을 반영한 Planning 문서 갱신 사이클이며, 단계는 유지한 채 실행 계획을 확정했다.
+
+### Handoff To Planning (단일 태스크)
+- task-id:
+  - phase1-windows-noinstall-bundle
+- 입력:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/cycle-manager/Cycle.md
+- 출력:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-noinstall-bundle.md
+
+### 리스크 및 블로커
+- 리스크:
+  - onedir 결과물 용량 증가로 다운로드/배포 시간이 길어질 수 있음
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Coding
+- 담당 스킬:
+  - coding
+
+## Cycle 28 (2026-02-18 23:39)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-noinstall-bundle
+- Planning 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-noinstall-bundle.md
+- 사용자 확정 조건:
+  - 배포 형식은 onedir 고정
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 무설치(onedir) 번들 생성/실행 경로를 코드와 운영 문서로 구현한다.
+- 방향:
+  - 빌드 스크립트 + 런처 + 운영/검증 문서를 같은 사이클에서 갱신한다.
+- 고민거리:
+  - PyInstaller 결과물의 런타임 경로 차이를 코드에서 안전하게 처리해야 한다.
+
+### 상태 전이
+- before:
+  - phase1-windows-noinstall-bundle: planning
+- after:
+  - phase1-windows-noinstall-bundle: coding
+- 전이 이유:
+  - onedir 무설치 실행 요구를 반영한 실제 구현 파일 생성 및 테스트 준비를 완료했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - Windows 환경에서 PowerShell 빌드 스크립트 실실행 검증은 별도 머신에서 필요
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Review
+- 담당 스킬:
+  - review
+
+## Cycle 29 (2026-02-18 23:58)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-noinstall-bundle
+- Review 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - onedir 무설치 번들의 frozen 경로 정합성을 검토한다.
+- 방향:
+  - import 경로 실패 가능성이 있으면 즉시 planning 복귀 기준을 적용한다.
+- 고민거리:
+  - PyInstaller 기본 `_internal` 구조와 코드 경로 탐색 규칙을 어떻게 일치시킬지
+
+### 상태 전이
+- before:
+  - phase1-windows-noinstall-bundle: coding
+- after:
+  - phase1-windows-noinstall-bundle: review
+- 전이 이유:
+  - 코딩 산출물에 대해 결함 판정을 위한 리뷰 사이클을 실행했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - frozen 환경에서 `ModuleNotFoundError` 발생 시 무설치 실행 목표가 즉시 무효화된다.
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Review 결과 반영
+- 담당 스킬:
+  - review
+
+## Cycle 30 (2026-02-18 23:58)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-noinstall-bundle
+- Review 결과:
+  - fail (planning return)
+- 핵심 결함:
+  - frozen 런타임 경로(`_internal`) 불일치 가능성
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 무설치 번들의 경로 전략 결함으로 planning 재진입이 필요하다.
+- 방향:
+  - 경로 탐색 우선순위와 빌드 산출물 구조를 재계획으로 고정한다.
+- 고민거리:
+  - `sys._MEIPASS` 기반 경로를 표준으로 둘지, 빌드 구조를 평탄화할지
+
+### 상태 전이
+- before:
+  - phase1-windows-noinstall-bundle: review
+- after:
+  - phase1-windows-noinstall-bundle: planning
+- 전이 이유:
+  - Review blocking finding을 해결하기 위해 planning으로 되돌림했다.
+
+### Handoff To Planning (단일 태스크)
+- task-id:
+  - phase1-windows-noinstall-bundle
+- 입력:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/cycle-manager/Cycle.md
+- 출력:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-noinstall-bundle.md
+
+### 리스크 및 블로커
+- 리스크:
+  - 경로 전략 미확정 상태로 코딩 재진입 시 동일 결함 재발 가능
+- 블로커:
+  - Windows 실기기 번들 실행 증적 미확보
+
+### 다음 액션
+- 다음 단계:
+  - Planning (single task) 완료 후 Coding 재진입
+- 담당 스킬:
+  - planning
+
+## Cycle 31 (2026-02-19 16:49)
+
+### 입력
+- Big Picture 소스:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/big-picture/BigPicture.md
+- Notion 소스 시도:
+  - https://www.notion.so/mirador/30be497bcfdf807a877bdccfbdcbd8c4?source=copy_link
+- 사용자 요청:
+  - 동기화 후 사이클 정리 + 태스크 분배 + 플래닝 재수행
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 원문 동기화 시도와 함께 현재 실패 지점을 기준으로 태스크를 재분해한다.
+- 방향:
+  - 단일 태스크를 결함 제거/실증 수집/게이트 재실행 3개 태스크로 재정렬한다.
+- 고민거리:
+  - Notion 인증 이슈 해결 전까지 로컬 문서를 기준으로 운영해도 되는지
+
+### 상태 전이
+- before:
+  - phase1-windows-noinstall-bundle: planning
+- after:
+  - phase1-windows-frozen-path-compat: planning
+- 전이 이유:
+  - Notion fetch는 인증 이슈로 실패했으나 로컬 기준 동기화를 완료했고, 실행 단위를 재분해해 planning 대상을 교체했다.
+
+### Handoff To Planning (단일 태스크)
+- task-id:
+  - phase1-windows-frozen-path-compat
+- 입력:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/cycle-manager/Cycle.md
+- 출력:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-frozen-path-compat.md
+
+### 리스크 및 블로커
+- 리스크:
+  - Notion 원문 pull이 실패해 로컬 문서 기준으로만 동기화됨
+- 블로커:
+  - Notion MCP 인증 필요(`Auth required`)
+
+### 다음 액션
+- 다음 단계:
+  - Planning (single task)
+- 담당 스킬:
+  - planning
+
+## Cycle 32 (2026-02-19 16:49)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-frozen-path-compat
+- Planning 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-frozen-path-compat.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - frozen 경로 결함 수정 범위를 coding 가능한 단위로 확정한다.
+- 방향:
+  - 런타임 경로 탐색 전략과 빌드 산출물 구조를 한 번에 고정한다.
+- 고민거리:
+  - `sys._MEIPASS` 우선 전략과 `--contents-directory` 옵션 조합의 최종 기준
+
+### 상태 전이
+- before:
+  - phase1-windows-frozen-path-compat: planning
+- after:
+  - phase1-windows-frozen-path-compat: planning
+- 전이 이유:
+  - planning 산출물을 생성해 coding 재진입 준비를 완료했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - Windows 실기기 실행 전까지는 frozen 경로 수정 효과를 확정할 수 없음
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Coding
+- 담당 스킬:
+  - coding
+
+## Cycle 33 (2026-02-19 17:25)
+
+### 입력
+- Big Picture 소스:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/big-picture/BigPicture.md
+- Notion 소스:
+  - https://www.notion.so/mirador/30be497bcfdf807a877bdccfbdcbd8c4?source=copy_link
+- 사용자 요청:
+  - 인증 복구 후 동기화 재실행 + 사이클 재정리 + 태스크 분배 + 플래닝 진행
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - Notion 인증 복구 상태에서 원문 동기화를 다시 검증하고 현재 큐를 재정렬한다.
+- 방향:
+  - 선행 의존성(`frozen-path-compat`, `noinstall-smoke-evidence`)이 충족되기 전 `windows-runtime-smoke`는 대기열로 되돌린다.
+- 고민거리:
+  - Notion 본문(2026-02-18 스냅샷)과 로컬 최신 운영 문서 간 수치 차이를 어떤 기준으로 유지할지
+
+### 상태 전이
+- before:
+  - phase1-windows-runtime-smoke: integration_test_pre
+- after:
+  - phase1-windows-runtime-smoke: queued
+- 전이 이유:
+  - 실기기 증적 보강 선행 조건이 남아 있어, 테스트 재실행 태스크를 대기열로 재배치했다.
+
+### Handoff To Planning (단일 태스크)
+- task-id:
+  - phase1-windows-frozen-path-compat
+- 입력:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/cycle-manager/Cycle.md
+- 출력:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-frozen-path-compat.md
+
+### 리스크 및 블로커
+- 리스크:
+  - Notion 문서가 최신 코드/테스트 수치를 즉시 반영하지 않아 참조 시점 혼선 가능
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Coding
+- 담당 스킬:
+  - coding
+
+## Cycle 34 (2026-02-19 17:52)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-frozen-path-compat
+- Coding 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/coding/Coding.md
+- 구현 검증:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q` -> `15 passed`
+  - `python3 -m py_compile ...` 오류 없음
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - frozen 경로 우선순위(`_MEIPASS`/exe dir/`_internal`)를 코드/테스트/빌드 스크립트에 반영했다.
+- 방향:
+  - coding 산출물을 review로 전달해 경로 정합성 결함 해소 여부를 판정한다.
+- 고민거리:
+  - Windows 실기기에서 빌드 스크립트/런처 실실행 증적은 Review 후속으로 확보 필요
+
+### 상태 전이
+- before:
+  - phase1-windows-frozen-path-compat: planning
+- after:
+  - phase1-windows-frozen-path-compat: coding
+- 전이 이유:
+  - planning 범위를 구현하고 자동 검증(15 passed)을 완료해 review 진입 준비가 끝났다.
+
+### 리스크 및 블로커
+- 리스크:
+  - 실기기 증적 미첨부 상태에서는 무설치 실행 안정성을 최종 확정할 수 없음
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Review
+- 담당 스킬:
+  - review
+
+## Cycle 35 (2026-02-19 19:53)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-frozen-path-compat
+- Review 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+- 검증 증적:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q` -> `15 passed`
+  - `python3 -m py_compile ...` 오류 없음
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - frozen 경로 호환성 보강 코딩 결과를 결함 중심으로 리뷰했다.
+- 방향:
+  - blocking 결함이 없으므로 다음 태스크(`phase1-windows-noinstall-smoke-evidence`) 준비로 이동한다.
+- 고민거리:
+  - 실기기 증적이 없는 상태에서는 무설치 실행 경험을 최종 확정할 수 없다.
+
+### 상태 전이
+- before:
+  - phase1-windows-frozen-path-compat: coding
+- after:
+  - phase1-windows-frozen-path-compat: review
+- 전이 이유:
+  - Planning 기준 구현 항목을 반영했고, Review에서 blocking defect 0건(pass 조건부)을 확인했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - Win10/Win11 실기기 onedir 증적 미첨부
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Cycle Manager에서 `phase1-windows-noinstall-smoke-evidence` 실행 승격
+- 담당 스킬:
+  - cycle-manager
+
+## Cycle 36 (2026-02-19 20:00)
+
+### 입력
+- 잔여 리스크 근거:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+- 리스크 요약:
+  - Win10/Win11 onedir 실기기 증적 미확보
+- 신규 Planning 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-noinstall-smoke-evidence.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - blocking 코드는 해소됐고, 릴리즈 신뢰도 리스크는 증적 수집 누락 가능성에 집중된다.
+- 방향:
+  - `phase1-windows-noinstall-smoke-evidence`를 planning으로 승격해 증적 수집 자동화 범위를 먼저 확정한다.
+- 고민거리:
+  - 실기기 수동 시나리오를 어느 정도까지 스크립트로 보조할지
+
+### 상태 전이
+- before:
+  - phase1-windows-noinstall-smoke-evidence: queued
+- after:
+  - phase1-windows-noinstall-smoke-evidence: planning
+- 전이 이유:
+  - Review의 조건부 pass 후속 리스크를 직접 닫는 태스크를 우선 실행 대상으로 승격했다.
+
+### Handoff To Planning (단일 태스크)
+- task-id:
+  - phase1-windows-noinstall-smoke-evidence
+- 입력:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/cycle-manager/Cycle.md
+- 출력:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-noinstall-smoke-evidence.md
+
+### 리스크 및 블로커
+- 리스크:
+  - macOS 환경에서는 PowerShell 스크립트 실실행 검증이 불가
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Coding
+- 담당 스킬:
+  - coding
+
+## Cycle 37 (2026-02-19 20:03)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-noinstall-smoke-evidence
+- Coding 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/coding/Coding.md
+- 검증 증적:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q` -> `15 passed`
+  - `python3 -m py_compile ...` 오류 없음
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 실기기 증적 누락 리스크를 줄이기 위해 run-id 기반 증적 생성 흐름을 코딩 반영했다.
+- 방향:
+  - `prepare_windows_smoke_evidence.ps1` 중심으로 runtime context/checklist/evidence를 한 번에 생성한다.
+- 고민거리:
+  - macOS 개발 환경에서는 PowerShell 실실행 검증이 불가능하다.
+
+### 상태 전이
+- before:
+  - phase1-windows-noinstall-smoke-evidence: planning
+- after:
+  - phase1-windows-noinstall-smoke-evidence: coding
+- 전이 이유:
+  - planning 산출물 기준으로 스크립트/문서 코딩을 반영하고 자동 테스트 회귀를 통과했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - Win10/Win11 실기기에서 증적 스크립트 실행 결과를 아직 첨부하지 못함
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Review
+- 담당 스킬:
+  - review
+
+## Cycle 38 (2026-02-19 21:30)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-noinstall-smoke-evidence
+- Review 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+- 검증 증적:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q` -> `15 passed`
+  - `python3 -m py_compile ...` 오류 없음
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - run-id 기반 증적 생성 코딩 결과를 리뷰해 결함 유무를 확인했다.
+- 방향:
+  - blocking 결함 없이 조건부 pass로 판단하고, 다음은 실기기 증적을 반영한 runtime smoke 재승격으로 연결한다.
+- 고민거리:
+  - macOS 환경에서는 PowerShell 실행 증적을 직접 만들 수 없어 Windows 실기기 협업이 필요하다.
+
+### 상태 전이
+- before:
+  - phase1-windows-noinstall-smoke-evidence: coding
+- after:
+  - phase1-windows-noinstall-smoke-evidence: review
+- 전이 이유:
+  - Planning 범위 구현 완료 후 Review에서 blocking defect 0건(pass 조건부)을 확인했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - Win10/Win11 실기기 run-id artifact 미첨부
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Cycle Manager에서 `phase1-windows-runtime-smoke` integration_test_pre 재진입 결정
+- 담당 스킬:
+  - cycle-manager
+
+## Cycle 39 (2026-02-19 21:51)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-runtime-smoke
+- Integration Test 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/integration-test/IntegrationTest.md
+- test_profile:
+  - ui_required
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - `phase1-windows-noinstall-smoke-evidence` 코딩/리뷰 반영 후 runtime smoke pre-deploy를 재실행한다.
+- 방향:
+  - 자동 테스트 통과 여부와 함께 Win10/Win11 실기기 run-id 증적 첨부 상태를 게이트로 판정한다.
+- 고민거리:
+  - 현재 실행 환경이 macOS라 Windows PowerShell 산출물을 직접 생성할 수 없다.
+
+### 상태 전이
+- before:
+  - phase1-windows-runtime-smoke: queued
+- after:
+  - phase1-windows-runtime-smoke: integration_test_pre
+- 전이 이유:
+  - Integration Test (Pre) 재실행을 시작했고, 결과는 fail(증적 미첨부)로 기록했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - Win10/Win11 실기기 artifact 미첨부 상태가 지속되면 git_release 진입이 지연된다.
+- 블로커:
+  - `ui_required` 기준 Win10/Win11 run-id artifact(`runtime-context/checklist/evidence`) 미첨부
+  - `prepare_windows_smoke_evidence.ps1` Windows 실행 증적 미첨부
+
+### 다음 액션
+- 다음 단계:
+  - Windows 실기기 증적 수집 후 Integration Test (Pre) 재실행
+- 담당 스킬:
+  - integration-test-pre
+
+## Cycle 40 (2026-02-19 21:57)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-noinstall-smoke-evidence
+- Coding 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/coding/Coding.md
+- 검증 증적:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q` -> `15 passed`
+  - `python3 -m py_compile ...` 오류 없음
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - Integration Test (Pre) 반복 실패 원인(실기기 증적 수집 난이도)을 줄이기 위해 번들 단독 증적 수집 UX를 보강했다.
+- 방향:
+  - onedir 번들에 증적 수집 스크립트/템플릿을 동봉하고 원클릭 BAT 경로를 제공한다.
+- 고민거리:
+  - Windows 실기기에서 BAT/PowerShell 체인 실실행 증적은 아직 필요하다.
+
+### 상태 전이
+- before:
+  - phase1-windows-noinstall-smoke-evidence: review
+- after:
+  - phase1-windows-noinstall-smoke-evidence: coding
+- 전이 이유:
+  - review 조건부 pass 이후, 실기기 증적 누락 리스크를 줄이는 follow-up 코딩을 수행했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - Win10/Win11 실기기 artifact 미첨부 상태 지속 시 runtime smoke 게이트 fail 유지
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Review
+- 담당 스킬:
+  - review
+
+## Cycle 41 (2026-02-19 21:57)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-noinstall-smoke-evidence
+- Review 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+- 검증 증적:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q` -> `15 passed in 0.09s`
+  - `python3 -m py_compile ...` 오류 없음
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 번들 단독 증적 수집 개선분을 결함 중심으로 검토한 결과 blocking defect는 없었다.
+- 방향:
+  - `phase1-windows-runtime-smoke`의 integration_test_pre를 재실행할 수 있도록 실기기 artifact 수집을 선행한다.
+- 고민거리:
+  - 현재 실행 환경(macOS)에서는 BAT/PowerShell 실행 증적을 직접 생성할 수 없다.
+
+### 상태 전이
+- before:
+  - phase1-windows-noinstall-smoke-evidence: coding
+- after:
+  - phase1-windows-noinstall-smoke-evidence: review
+- 전이 이유:
+  - follow-up 코딩을 완료했고 Review에서 blocking defect 0건(pass 조건부)을 확인했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - Win10/Win11 각 1회 run-id artifact 미첨부
+- 블로커:
+  - `ui_required` 기준 실기기 증적(runtime-context/checklist/evidence) 누락
+
+### 다음 액션
+- 다음 단계:
+  - Windows 실기기에서 `collect_windows_smoke_evidence.bat` 실행 -> Integration Test (Pre) 재실행
+- 담당 스킬:
+  - integration-test-pre
+
+## Cycle 42 (2026-02-19 22:03)
+
+### 입력
+- 사용자 결정:
+  - 본 프로젝트 한정으로 실기기 수동 스모크를 non-blocking으로 전환하고, 자동 테스트 통과 시 push 가능하도록 프로세스를 변경
+- Integration Test 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/integration-test/IntegrationTest.md
+- 검증 증적:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q` -> `15 passed in 0.09s`
+  - `python3 -m py_compile ...` 오류 없음
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 현재 실행 환경 제약으로 Win10/Win11 실기기 증적을 강제하면 파이프라인이 정체된다.
+- 방향:
+  - Integration Test (Pre)를 `ui_optional` override로 운영하고 자동 테스트 통과를 push 전 필수 게이트로 고정한다.
+- 고민거리:
+  - 실기기 결함이 늦게 발견될 가능성은 잔여 리스크로 관리한다.
+
+### 상태 전이
+- before:
+  - phase1-windows-runtime-smoke: integration_test_pre
+- after:
+  - phase1-windows-runtime-smoke: git_release
+- 전이 이유:
+  - 프로젝트 override 기준으로 pre-deploy를 pass 처리했고, `테스트 통과 => git_release` 규칙을 적용했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - 실기기 UI/OAuth 회귀는 자동 테스트만으로 완전 커버되지 않는다.
+- 블로커:
+  - 없음(본 프로젝트 override 기준)
+
+### 다음 액션
+- 다음 단계:
+  - Git Release (commit/tag/push)
+- 담당 스킬:
+  - git-release
+
+## Cycle 43 (2026-02-19 22:03)
+
+### 입력
+- 상태 정리 대상:
+  - phase1-windows-frozen-path-compat
+  - phase1-windows-noinstall-smoke-evidence
+- 근거 문서:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 두 태스크는 Review에서 blocking defect 0건(pass 조건부)이며, 프로젝트 override 이후 push 차단 항목이 아니다.
+- 방향:
+  - Stage Board에서 review 잔여 항목을 정리하고 done으로 마감한다.
+- 고민거리:
+  - 실기기 증적 수집은 done 이후에도 권장 백로그로 유지할 수 있다.
+
+### 상태 전이
+- before:
+  - phase1-windows-frozen-path-compat: review
+  - phase1-windows-noinstall-smoke-evidence: review
+- after:
+  - phase1-windows-frozen-path-compat: done
+  - phase1-windows-noinstall-smoke-evidence: done
+- 전이 이유:
+  - 프로젝트 override 기준에서 차단 리스크가 해소되어 완료 처리 가능하다.
+
+### 리스크 및 블로커
+- 리스크:
+  - 실기기 회귀 리스크는 후속 선택 검증으로 관리 필요
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Git Release (phase1-windows-runtime-smoke)
+- 담당 스킬:
+  - git-release

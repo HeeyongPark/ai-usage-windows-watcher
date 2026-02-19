@@ -2,25 +2,34 @@
 
 ## Run Summary
 - Run id:
-- Task id: `phase1-windows-runtime-smoke`
+- Task id: `phase1-windows-noinstall-smoke-evidence`
 - Date/time:
 - Tester:
 - Machine:
 - OS:
-- Python:
+- Distribution mode: onedir
+- Bundle path:
+- Bundle layout: flat | _internal
+- Launcher path:
 - Result: pass | fail
 
 ## Environment Snapshot
 - Runtime context file:
-  - `desktop_win/tests/manual/artifacts/runtime-context-<run-id>.json`
+  - `smoke_evidence/artifacts/runtime-context-<run-id>.json` or `desktop_win/tests/manual/artifacts/runtime-context-<run-id>.json`
 - DB path:
 - Token path:
+- Bundle checksum (optional):
+- Bundle validation:
+  - exe exists:
+  - launcher exists:
+  - collector flat exists:
+  - collector internal exists:
 
 ## Checklist Result
 - Checklist file:
-  - `desktop_win/tests/manual/windows-runtime-smoke-checklist.md`
+  - `smoke_evidence/artifacts/windows-runtime-smoke-checklist-<run-id>.md` or `desktop_win/tests/manual/artifacts/windows-runtime-smoke-checklist-<run-id>.md`
 - Scenario result:
-  - Install and launch:
+  - No-install launch (onedir):
   - OAuth login:
   - Data visibility:
   - Refresh interval guard:
@@ -34,6 +43,7 @@
 - Actual:
 - Log path:
 - Screenshot path:
+- Bundle version/hash:
 
 ## Action Items
 - Owner:
