@@ -35,10 +35,24 @@ function Ensure-RuntimeDllSet {
 
     $bundleInternalDir = Join-Path $BundleRootPath "_internal"
     $buildPythonDir = Split-Path -Parent $BuildPythonPath
-    $pythonDllName = (& $BuildPythonPath -c "import sys; print(f'python{sys.version_info.major}{sys.version_info.minor}.dll')" | Out-String).Trim()
+    $buildVenvRoot = Split-Path -Parent $buildPythonDir
+    $runtimeInfoJson = (& $BuildPythonPath -c "import json, os, sys; print(json.dumps({'abi': f'python{sys.version_info.major}{sys.version_info.minor}.dll', 'base_prefix': sys.base_prefix, 'base_dlls': os.path.join(sys.base_prefix, 'DLLs')}))" | Out-String).Trim()
+    if (-not $runtimeInfoJson) {
+        throw "Unable to resolve runtime metadata from build interpreter."
+    }
+
+    $runtimeInfo = $runtimeInfoJson | ConvertFrom-Json
+    $pythonDllName = [string]$runtimeInfo.abi
     if (-not $pythonDllName) {
         throw "Unable to resolve Python DLL name from build interpreter."
     }
+
+    $sourceSearchDirs = @(
+        $buildPythonDir,
+        $buildVenvRoot,
+        [string]$runtimeInfo.base_prefix,
+        [string]$runtimeInfo.base_dlls
+    ) | Where-Object { $_ -and (Test-Path $_) } | Select-Object -Unique
 
     $runtimeDllRules = @(
         @{ Name = $pythonDllName; Required = $true },
@@ -61,8 +75,16 @@ function Ensure-RuntimeDllSet {
             continue
         }
 
-        $sourceCandidate = Join-Path $buildPythonDir $dllName
-        if (Test-Path $sourceCandidate) {
+        $sourceCandidate = $null
+        foreach ($sourceDir in $sourceSearchDirs) {
+            $candidate = Join-Path $sourceDir $dllName
+            if (Test-Path $candidate) {
+                $sourceCandidate = $candidate
+                break
+            }
+        }
+
+        if ($sourceCandidate) {
             if (-not (Test-Path $bundleInternalDir)) {
                 New-Item -ItemType Directory -Path $bundleInternalDir -Force | Out-Null
             }
@@ -73,10 +95,12 @@ function Ensure-RuntimeDllSet {
         }
 
         if ($dllRequired) {
-            throw "Required runtime DLL missing from bundle and build env: $dllName"
+            $searched = ($sourceSearchDirs -join ", ")
+            throw "Required runtime DLL missing from bundle and known source dirs: $dllName (searched: $searched)"
         }
 
-        Write-Warning "Optional runtime DLL missing: $dllName (source: $sourceCandidate)"
+        $searched = ($sourceSearchDirs -join ", ")
+        Write-Warning "Optional runtime DLL missing: $dllName (searched: $searched)"
     }
 }
 
