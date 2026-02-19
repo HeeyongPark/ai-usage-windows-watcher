@@ -27,15 +27,15 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - Review 통과 + Integration Test (Pre) 통과 + Git Release 완료 시 `done` 처리
 
 ## Active Queue
-1. [git_release] phase1-windows-runtime-smoke :: 자동 테스트 통과 기준 pre-deploy pass, push 대기
-2. [queued] phase1-test-harness-expansion :: 테스트 하네스 확장
-3. [queued] phase1-oauth-live-provider-smoke :: OAuth 실공급자 스모크
-4. [queued] phase1-release-readiness-windows :: 신규 Windows 머신 무설치 실행 재현 검증
-5. [done] phase1-win-agent-usage-collector :: Windows 사용량 수집기 에이전트 MVP
-6. [done] phase1-desktop-dashboard :: 로컬 대시보드 MVP
-7. [done] phase1-budget-alert-rule :: 예산 임계치 알림 규칙
-8. [done] phase1-windows-frozen-path-compat :: Windows frozen 경로 호환성 보강
-9. [done] phase1-windows-noinstall-smoke-evidence :: 무설치 증적 수집 자동화 보강
+1. [queued] phase1-test-harness-expansion :: 테스트 하네스 확장
+2. [queued] phase1-oauth-live-provider-smoke :: OAuth 실공급자 스모크
+3. [queued] phase1-release-readiness-windows :: 신규 Windows 머신 무설치 실행 재현 검증
+4. [done] phase1-win-agent-usage-collector :: Windows 사용량 수집기 에이전트 MVP
+5. [done] phase1-desktop-dashboard :: 로컬 대시보드 MVP
+6. [done] phase1-budget-alert-rule :: 예산 임계치 알림 규칙
+7. [done] phase1-windows-frozen-path-compat :: Windows frozen 경로 호환성 보강
+8. [done] phase1-windows-noinstall-smoke-evidence :: 무설치 증적 수집 자동화 보강
+9. [done] phase1-windows-runtime-smoke :: 자동 테스트 통과 기준 pre-deploy/gitrelease 완료
 
 ## Stage Board (Latest)
 - queued:
@@ -47,7 +47,6 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - review:
 - integration_test_pre:
 - git_release:
-  - phase1-windows-runtime-smoke
 - deploy:
 - integration_test_post:
 - done:
@@ -56,6 +55,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - phase1-budget-alert-rule
   - phase1-windows-frozen-path-compat
   - phase1-windows-noinstall-smoke-evidence
+  - phase1-windows-runtime-smoke
 - blocked:
 
 ## Cycle 1 (2026-02-18 16:03)
@@ -1740,3 +1740,42 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - Git Release (phase1-windows-runtime-smoke)
 - 담당 스킬:
   - git-release
+
+## Cycle 44 (2026-02-19 22:11)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-runtime-smoke
+- Git Release 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/git-release/GitRelease.md
+- 릴리즈 기준:
+  - commit: `af8af973c75365531396f7077b9fd6b246fd149b`
+  - tag: `v0.1.2-phase1`
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 프로젝트 한정 override(`자동 테스트 통과 시 push`) 기준으로 git_release를 실행했다.
+- 방향:
+  - branch/tag push 완료 상태를 `done`으로 마감한다.
+- 고민거리:
+  - 실기기 회귀는 비차단 권장 트랙으로 관리한다.
+
+### 상태 전이
+- before:
+  - phase1-windows-runtime-smoke: git_release
+- after:
+  - phase1-windows-runtime-smoke: done
+- 전이 이유:
+  - main branch push + release tag push를 완료했다.
+
+### 리스크 및 블로커
+- 리스크:
+  - 실기기 환경 특화 결함은 후속 권장 검증에서 발견될 수 있음
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - closed (project terminal stage: git_release)
+- 담당 스킬:
+  - cycle-manager
