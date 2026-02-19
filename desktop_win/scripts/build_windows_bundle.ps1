@@ -80,8 +80,8 @@ function Ensure-RuntimeDllSet {
         $dllRequired = [bool]$rule["Required"]
 
         $bundleCandidates = @(
-            Join-Path -Path ([string]$bundleInternalDir) -ChildPath $dllName,
-            Join-Path -Path ([string]$BundleRootPath) -ChildPath $dllName
+            (Join-Path -Path ([string]$bundleInternalDir) -ChildPath $dllName)
+            (Join-Path -Path ([string]$BundleRootPath) -ChildPath $dllName)
         )
         $bundleHit = $bundleCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
         if ($bundleHit) {
