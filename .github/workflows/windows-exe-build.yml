@@ -1,0 +1,60 @@
+name: Windows EXE Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/windows-exe-build.yml"
+      - "desktop_win/**"
+      - "agent/**"
+  pull_request:
+    paths:
+      - ".github/workflows/windows-exe-build.yml"
+      - "desktop_win/**"
+      - "agent/**"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build Windows onedir bundle
+        run: |
+          Set-StrictMode -Version Latest
+          ./desktop_win/scripts/build_windows_bundle.ps1 -PythonExe python -ProjectRoot $PWD
+
+      - name: Generate executable checksum
+        run: |
+          Set-StrictMode -Version Latest
+          $exePath = Join-Path $PWD "desktop_win/dist/AIUsageWatcher/AIUsageWatcher.exe"
+          if (-not (Test-Path $exePath)) {
+            throw "AIUsageWatcher.exe not found at $exePath"
+          }
+          $hash = (Get-FileHash -Path $exePath -Algorithm SHA256).Hash
+          $checksumPath = Join-Path $PWD "desktop_win/dist/AIUsageWatcher/AIUsageWatcher.exe.sha256.txt"
+          "$hash  AIUsageWatcher.exe" | Out-File -FilePath $checksumPath -Encoding ascii
+          Write-Host "[done] checksum file generated: $checksumPath"
+
+      - name: Upload bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AIUsageWatcher-windows-bundle
+          path: desktop_win/dist/AIUsageWatcher/**
+          if-no-files-found: error
+          retention-days: 14
