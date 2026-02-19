@@ -37,7 +37,18 @@ jobs:
       - name: Build Windows onedir bundle
         run: |
           Set-StrictMode -Version Latest
-          ./desktop_win/scripts/build_windows_bundle.ps1 -PythonExe python -ProjectRoot $PWD
+          $ErrorActionPreference = "Stop"
+          try {
+            ./desktop_win/scripts/build_windows_bundle.ps1 -PythonExe python -ProjectRoot $PWD
+          } catch {
+            $message = $_.Exception.Message
+            if (-not $message) {
+              $message = ($_ | Out-String)
+            }
+            $message = $message -replace "`r|`n", " "
+            Write-Host "::error title=Windows bundle build failed::$message"
+            throw
+          }
 
       - name: Generate executable checksum
         run: |
