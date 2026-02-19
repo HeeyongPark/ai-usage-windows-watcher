@@ -1,6 +1,11 @@
 from __future__ import annotations
 
-import sqlite3
+# PyInstaller onedir builds may occasionally miss the sqlite3 stdlib package
+# while still bundling _sqlite3.pyd. Fallback keeps runtime functional.
+try:
+    import sqlite3
+except ModuleNotFoundError:
+    import _sqlite3 as sqlite3  # type: ignore[no-redef]
 from pathlib import Path
 
 from collector import UsageEvent, UsageSession

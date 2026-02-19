@@ -154,8 +154,10 @@ try {
         --distpath $DistRoot `
         --workpath $BuildWorkDir `
         --specpath $DesktopRoot `
+        --paths "$AgentRoot\src" `
         --hidden-import "sqlite3" `
         --hidden-import "_sqlite3" `
+        --collect-submodules "sqlite3" `
         --add-data "$AgentRoot\src;agent/src" `
         --add-data "$AgentRoot\sql;agent/sql" `
         --add-data "$DesktopRoot\.env.example;." `
@@ -181,12 +183,17 @@ if (-not (Test-Path $SqliteExtInternal) -and -not (Test-Path $SqliteExtFlat)) {
     throw "Bundle sqlite runtime missing: _sqlite3.pyd was not found under flat or _internal layout."
 }
 
-$BaseLibraryZip = Join-Path $BundleRoot "_internal\base_library.zip"
-if (Test-Path $BaseLibraryZip) {
+$BaseLibraryZip = @(
+    (Join-Path $BundleRoot "_internal\base_library.zip")
+    (Join-Path $BundleRoot "base_library.zip")
+) | Where-Object { Test-Path $_ } | Select-Object -First 1
+if ($BaseLibraryZip) {
     $SqliteStdlibCheck = (& $BuildPython -c "import sys, zipfile; z=zipfile.ZipFile(sys.argv[1]); names=set(z.namelist()); print('ok' if 'sqlite3/__init__.pyc' in names else 'missing')" $BaseLibraryZip | Out-String).Trim()
     if ($SqliteStdlibCheck -ne "ok") {
         throw "Bundle sqlite stdlib missing: sqlite3/__init__.pyc was not found in base_library.zip."
     }
+} else {
+    Write-Warning "base_library.zip was not found under bundle root; sqlite3 stdlib validation skipped."
 }
 
 Ensure-RuntimeDllSet -BundleRootPath $BundleRoot -BuildPythonPath $BuildPython
