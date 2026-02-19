@@ -127,6 +127,8 @@ Write-Host "[build] Installing build dependencies"
 & $BuildPython -m pip install --upgrade pip
 & $BuildPython -m pip install pyinstaller==6.11.1
 & $BuildPython -m pip install -r (Join-Path $AgentRoot "requirements.txt")
+Write-Host "[build] Verifying sqlite runtime on build interpreter"
+& $BuildPython -c "import sqlite3, _sqlite3; print('sqlite runtime ready:', sqlite3.sqlite_version)"
 
 Write-Host "[build] Cleaning old artifacts"
 if (Test-Path $BuildWorkDir) {
@@ -152,6 +154,8 @@ try {
         --distpath $DistRoot `
         --workpath $BuildWorkDir `
         --specpath $DesktopRoot `
+        --hidden-import "sqlite3" `
+        --hidden-import "_sqlite3" `
         --add-data "$AgentRoot\src;agent/src" `
         --add-data "$AgentRoot\sql;agent/sql" `
         --add-data "$DesktopRoot\.env.example;." `
@@ -169,6 +173,20 @@ $CollectorFlat = Join-Path $BundleRoot "agent\src\collector.py"
 $CollectorInternal = Join-Path $BundleRoot "_internal\agent\src\collector.py"
 if (-not (Test-Path $CollectorFlat) -and -not (Test-Path $CollectorInternal)) {
     throw "Bundle agent path missing: collector.py was not found under flat or _internal layout."
+}
+
+$SqliteExtInternal = Join-Path $BundleRoot "_internal\_sqlite3.pyd"
+$SqliteExtFlat = Join-Path $BundleRoot "_sqlite3.pyd"
+if (-not (Test-Path $SqliteExtInternal) -and -not (Test-Path $SqliteExtFlat)) {
+    throw "Bundle sqlite runtime missing: _sqlite3.pyd was not found under flat or _internal layout."
+}
+
+$BaseLibraryZip = Join-Path $BundleRoot "_internal\base_library.zip"
+if (Test-Path $BaseLibraryZip) {
+    $SqliteStdlibCheck = (& $BuildPython -c "import sys, zipfile; z=zipfile.ZipFile(sys.argv[1]); names=set(z.namelist()); print('ok' if 'sqlite3/__init__.pyc' in names else 'missing')" $BaseLibraryZip | Out-String).Trim()
+    if ($SqliteStdlibCheck -ne "ok") {
+        throw "Bundle sqlite stdlib missing: sqlite3/__init__.pyc was not found in base_library.zip."
+    }
 }
 
 Ensure-RuntimeDllSet -BundleRootPath $BundleRoot -BuildPythonPath $BuildPython

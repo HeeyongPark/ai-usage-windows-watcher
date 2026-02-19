@@ -30,6 +30,7 @@
   - App window starts without traceback and shows dashboard UI.
   - `ModuleNotFoundError: collector` 또는 유사 import 오류가 없다.
   - `Failed to load Python DLL ... _internal\python3XX.dll` 오류가 없다.
+  - `ModuleNotFoundError: No module named 'sqlite3'` 오류가 없다.
 - Result:
   - [ ] pass
   - [ ] fail

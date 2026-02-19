@@ -102,6 +102,8 @@ $vcRuntimeInternalPath = Join-Path $resolvedBundleRoot "_internal\\vcruntime140.
 $vcRuntimeFlatPath = Join-Path $resolvedBundleRoot "vcruntime140.dll"
 $vcRuntime1InternalPath = Join-Path $resolvedBundleRoot "_internal\\vcruntime140_1.dll"
 $vcRuntime1FlatPath = Join-Path $resolvedBundleRoot "vcruntime140_1.dll"
+$sqliteExtInternalPath = Join-Path $resolvedBundleRoot "_internal\\_sqlite3.pyd"
+$sqliteExtFlatPath = Join-Path $resolvedBundleRoot "_sqlite3.pyd"
 
 $pythonRuntimeDllPath = ""
 $pythonRuntimeCandidates = @()
@@ -134,6 +136,13 @@ if (Test-Path $vcRuntime1InternalPath) {
     $vcRuntime1Path = $vcRuntime1InternalPath
 } elseif (Test-Path $vcRuntime1FlatPath) {
     $vcRuntime1Path = $vcRuntime1FlatPath
+}
+
+$sqliteExtPath = ""
+if (Test-Path $sqliteExtInternalPath) {
+    $sqliteExtPath = $sqliteExtInternalPath
+} elseif (Test-Path $sqliteExtFlatPath) {
+    $sqliteExtPath = $sqliteExtFlatPath
 }
 
 $bundleLayout = "missing"
@@ -184,6 +193,8 @@ $runtimeContext = [ordered]@{
     vcruntime140_dll_exists = [bool]$vcRuntimePath
     vcruntime140_1_dll_path = $vcRuntime1Path
     vcruntime140_1_dll_exists = [bool]$vcRuntime1Path
+    sqlite_ext_path = $sqliteExtPath
+    sqlite_ext_exists = [bool]$sqliteExtPath
     screens = $resolutionList
 }
 

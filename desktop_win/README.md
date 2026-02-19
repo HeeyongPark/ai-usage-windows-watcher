@@ -38,6 +38,7 @@ Troubleshooting (`Failed to load Python DLL ... _internal\python312.dll`):
 - Do not run stale outputs from paths like `desktop_win\build\dist\...`.
 - If bundle is stored in OneDrive, set the folder to `Always keep on this device`.
 - Rebuild with `scripts\build_windows_bundle.ps1` to regenerate missing runtime DLLs.
+- If `ModuleNotFoundError: No module named 'sqlite3'` appears, rebuild with the latest script and verify `_internal\_sqlite3.pyd` exists.
 
 ## Run (CI build without a Windows machine)
 Use GitHub Actions workflow:

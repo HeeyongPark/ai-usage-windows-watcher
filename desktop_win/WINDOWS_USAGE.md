@@ -44,11 +44,13 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build_windows_bundle.ps1
 
 ### DLL 로드 오류 트러블슈팅
 - 오류 예시: `Failed to load Python DLL ... _internal\python312.dll`
+- 오류 예시: `ModuleNotFoundError: No module named 'sqlite3'`
 - 실행 위치를 먼저 확인:
   - 표준 경로: `desktop_win\dist\AIUsageWatcher\run_ai_usage_watcher.bat`
   - 비표준 경로(예: `desktop_win\build\dist\UsageWatcher\...`) 산출물은 사용하지 않음
 - OneDrive 경로에서 실행 중이면 폴더를 `Always keep on this device`로 고정
 - 번들 내 `_internal\python3*.dll`, `_internal\python3.dll` 존재를 확인
+- 번들 내 `_internal\_sqlite3.pyd` 존재를 확인
 - 누락 시 아래 명령으로 재빌드:
 ```powershell
 cd C:\path\to\ai-usage-windows-watcher\desktop_win\

@@ -28,6 +28,7 @@
   - python abi dll exists (`python3.dll`):
   - vcruntime140.dll exists:
   - vcruntime140_1.dll exists:
+  - sqlite extension exists (`_sqlite3.pyd`):
 
 ## Checklist Result
 - Checklist file:

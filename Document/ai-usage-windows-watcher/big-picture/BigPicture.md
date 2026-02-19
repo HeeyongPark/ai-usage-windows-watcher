@@ -65,11 +65,13 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - 사용자 실행 환경 제약으로 실기기 수동 스모크를 push 차단 게이트에서 제외하는 프로젝트 한정 override를 적용했다.
   - `desktop_win/scripts/build_windows_bundle.ps1`는 Windows 전용(`$env:OS == Windows_NT`)이며, 현재 macOS 작업 환경에서는 PowerShell이 없어 공식 `exe` 번들을 직접 생성할 수 없다.
   - Windows 실기기에서 `Failed to load Python DLL ... _internal\\python312.dll` 오류가 보고됐고, 경로가 표준 산출물(`dist\\AIUsageWatcher`)이 아닌 `build\\dist\\UsageWatcher`로 확인되어 비표준 번들/런타임 DLL 누락 가능성을 리스크로 추가했다.
+  - 표준 경로 재실행 후 `ModuleNotFoundError: No module named 'sqlite3'` 오류가 재현되어, PyInstaller 빌드에서 `sqlite3/_sqlite3`를 명시 포함해야 하는 패키징 결함을 확인했다.
 - 이번 사이클 방향:
   - `phase1-windows-exe-build-artifact-delivery`를 추가해 Windows 빌드 머신/CI에서 `AIUsageWatcher.exe` 아티팩트를 생성·검증·전달하는 경로를 고정한다.
   - `phase1-windows-runtime-smoke`는 `ui_optional` pre-deploy 게이트로 운영하고 자동 테스트 통과 시 git_release로 전이한다.
   - 실기기 증적 수집(`phase1-windows-noinstall-smoke-evidence`)은 권장 트랙으로 유지한다.
   - 번들 생성 단계에서 `_internal` 런타임 DLL(`python3*.dll`, `vcruntime140*.dll`) 존재를 강제 검증하고, 런처 사전 점검으로 사용자에게 즉시 복구 가이드를 제공한다.
+  - PyInstaller 빌드에 `--hidden-import sqlite3`/`--hidden-import _sqlite3`를 고정하고 `_sqlite3.pyd`/`sqlite3 stdlib` 포함 여부를 빌드 후 검증한다.
 - 고민거리:
   - Windows 빌드 러너(로컬 실기기 vs GitHub Actions windows-latest) 중 어떤 채널을 표준으로 고정할지
   - 실기기 회귀를 비차단으로 운영할 때 발견 지연 리스크를 어떻게 관리할지
@@ -83,6 +85,7 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
 - 성공 기준:
   - Windows 빌드 환경에서 `desktop_win/dist/AIUsageWatcher/AIUsageWatcher.exe`를 생성하고 배포 가능한 번들(`run_ai_usage_watcher.bat`, 증적 스크립트 포함)을 확보한다.
   - 런타임 DLL(`_internal\\python3*.dll`, `_internal\\vcruntime140*.dll`) 존재 검증이 빌드 단계에서 자동 통과한다.
+  - 런타임 sqlite 모듈(`_sqlite3.pyd`, `sqlite3/__init__.pyc`) 포함 검증이 빌드 단계에서 자동 통과한다.
   - `phase1-windows-runtime-smoke` Integration Test (Pre)에서 자동 테스트가 통과한다.
   - pre-deploy pass 직후 git_release/push가 가능하다.
   - 실기기 증적은 권장 항목으로 누적 기록한다.
@@ -287,3 +290,15 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - OneDrive 온디맨드/백신 격리로 `_internal` DLL이 사후 누락될 경우, 빌드 성공 후에도 실행 실패가 재발할 수 있음
 - 다음 Cycle 전달사항:
   - Windows 빌드 머신에서 보강된 빌드 스크립트를 실행해 DLL 검증 로그와 재현 스모크 결과를 증적으로 남긴다.
+
+### Cycle 10 (2026-02-20 00:05)
+- 이번 변경:
+  - 표준 경로(`dist\\AIUsageWatcher\\run_ai_usage_watcher.bat`) 재실행에서 `ModuleNotFoundError: No module named 'sqlite3'`를 확인했다.
+  - 빌드 스크립트에 `sqlite3/_sqlite3` hidden import를 추가하고, `_sqlite3.pyd`/`sqlite3 stdlib` 포함 여부를 빌드 후 검증하도록 보강했다.
+  - 런처/문서/증적 템플릿에 sqlite 누락 진단 항목을 추가했다.
+- 방향 변경:
+  - 런타임 검증 기준을 "DLL 무결성"에서 "DLL + 핵심 stdlib(sqlite) 무결성"으로 확장한다.
+- 새 리스크:
+  - Windows 빌드 환경의 Python 배포판이 sqlite 확장 없이 설치된 경우 빌드 단계에서 즉시 실패할 수 있음(의도된 조기 실패)
+- 다음 Cycle 전달사항:
+  - Windows 빌드 머신에서 최신 스크립트로 재빌드 후 `_internal\\_sqlite3.pyd` 존재와 앱 기동 성공을 스모크 증적으로 기록한다.

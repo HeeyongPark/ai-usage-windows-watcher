@@ -11,6 +11,8 @@ set "VC_RUNTIME_INTERNAL=%BASE_DIR%_internal\vcruntime140.dll"
 set "VC_RUNTIME_FLAT=%BASE_DIR%vcruntime140.dll"
 set "VC_RUNTIME_1_INTERNAL=%BASE_DIR%_internal\vcruntime140_1.dll"
 set "VC_RUNTIME_1_FLAT=%BASE_DIR%vcruntime140_1.dll"
+set "SQLITE_EXT_INTERNAL=%BASE_DIR%_internal\_sqlite3.pyd"
+set "SQLITE_EXT_FLAT=%BASE_DIR%_sqlite3.pyd"
 set "ENV_FILE=%BASE_DIR%.env"
 set "ENV_EXAMPLE=%BASE_DIR%.env.example"
 
@@ -88,6 +90,16 @@ if exist "%VC_RUNTIME_1_INTERNAL%" set "VC_RUNTIME_1=%VC_RUNTIME_1_INTERNAL%"
 if not defined VC_RUNTIME_1 if exist "%VC_RUNTIME_1_FLAT%" set "VC_RUNTIME_1=%VC_RUNTIME_1_FLAT%"
 if not defined VC_RUNTIME_1 (
   echo [WARN] vcruntime140_1.dll not found in bundle. Install Microsoft Visual C++ Redistributable if launch fails.
+)
+
+set "SQLITE_EXT="
+if exist "%SQLITE_EXT_INTERNAL%" set "SQLITE_EXT=%SQLITE_EXT_INTERNAL%"
+if not defined SQLITE_EXT if exist "%SQLITE_EXT_FLAT%" set "SQLITE_EXT=%SQLITE_EXT_FLAT%"
+if not defined SQLITE_EXT (
+  echo [ERROR] _sqlite3.pyd is missing from the bundle.
+  echo [ERROR] Rebuild via desktop_win\scripts\build_windows_bundle.ps1 and rerun from dist\AIUsageWatcher.
+  pause
+  exit /b 1
 )
 
 if not exist "%ENV_FILE%" (
