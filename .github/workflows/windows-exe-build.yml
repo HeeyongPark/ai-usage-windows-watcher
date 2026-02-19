@@ -42,8 +42,16 @@ jobs:
             ./desktop_win/scripts/build_windows_bundle.ps1 -PythonExe python -ProjectRoot $PWD
           } catch {
             $message = $_.Exception.Message
+            $position = $_.InvocationInfo.PositionMessage
+            $stack = $_.ScriptStackTrace
             if (-not $message) {
               $message = ($_ | Out-String)
+            }
+            if ($position) {
+              $message = "$message | $position"
+            }
+            if ($stack) {
+              $message = "$message | $stack"
             }
             $message = $message -replace "`r|`n", " "
             Write-Host "::error title=Windows bundle build failed::$message"
