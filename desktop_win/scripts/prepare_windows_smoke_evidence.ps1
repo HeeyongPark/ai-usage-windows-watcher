@@ -8,17 +8,59 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function Normalize-PathInput {
+    param(
+        [string]$PathValue
+    )
+
+    if ($null -eq $PathValue) {
+        return ""
+    }
+
+    $normalized = $PathValue.Trim()
+    if ($normalized.Length -ge 2) {
+        $startsWithDouble = $normalized.StartsWith('"')
+        $endsWithDouble = $normalized.EndsWith('"')
+        $startsWithSingle = $normalized.StartsWith("'")
+        $endsWithSingle = $normalized.EndsWith("'")
+        if (($startsWithDouble -and $endsWithDouble) -or ($startsWithSingle -and $endsWithSingle)) {
+            $normalized = $normalized.Substring(1, $normalized.Length - 2).Trim()
+        }
+    }
+
+    # Strip common control characters that can leak from shell wrappers.
+    $normalized = $normalized -replace "[\u0000-\u001F]", ""
+    return $normalized
+}
+
 function Resolve-WorkspacePath {
     param(
         [string]$PathValue,
         [string]$BasePath
     )
 
-    if ([System.IO.Path]::IsPathRooted($PathValue)) {
-        return [System.IO.Path]::GetFullPath($PathValue)
+    $safePathValue = Normalize-PathInput -PathValue $PathValue
+    $safeBasePath = Normalize-PathInput -PathValue $BasePath
+
+    if (-not $safePathValue) {
+        throw "Path input is empty after normalization."
     }
 
-    return [System.IO.Path]::GetFullPath((Join-Path $BasePath $PathValue))
+    $isRooted = $false
+    try {
+        $isRooted = [System.IO.Path]::IsPathRooted($safePathValue)
+    } catch {
+        throw "Invalid path input: '$safePathValue' ($($_.Exception.Message))"
+    }
+
+    try {
+        if ($isRooted) {
+            return [System.IO.Path]::GetFullPath($safePathValue)
+        }
+        return [System.IO.Path]::GetFullPath((Join-Path $safeBasePath $safePathValue))
+    } catch {
+        throw "Failed to resolve path. value='$safePathValue', base='$safeBasePath' ($($_.Exception.Message))"
+    }
 }
 
 function Resolve-DesktopRoot {
