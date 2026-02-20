@@ -24,10 +24,17 @@ if not exist "%APP_EXE%" (
 )
 
 set "RUN_ID=%~1"
+
+rem %~dp0 ends with a backslash (e.g. C:\...\AIUsageWatcher\).
+rem Passing it inside "..." to PowerShell causes cmd.exe to escape the closing "
+rem as \" making the path arrive as  C:\...\AIUsageWatcher"  (with a trailing quote).
+rem Fix: strip the trailing backslash before embedding in the PowerShell call.
+set "BUNDLE_ROOT=%BASE_DIR:~0,-1%"
+
 if defined RUN_ID (
-  powershell -ExecutionPolicy Bypass -File "%PREPARE_SCRIPT%" -BundleRoot "%BASE_DIR%" -RunId "%RUN_ID%"
+  powershell -ExecutionPolicy Bypass -File "%PREPARE_SCRIPT%" -BundleRoot "%BUNDLE_ROOT%" -RunId "%RUN_ID%"
 ) else (
-  powershell -ExecutionPolicy Bypass -File "%PREPARE_SCRIPT%" -BundleRoot "%BASE_DIR%"
+  powershell -ExecutionPolicy Bypass -File "%PREPARE_SCRIPT%" -BundleRoot "%BUNDLE_ROOT%"
 )
 
 if not "%ERRORLEVEL%"=="0" (

@@ -735,3 +735,74 @@
   - pass
 - 다음 단계:
   - Integration Test/Git Release/Process Verification 기록 동기화
+
+## Review Follow-up (2026-02-20 10:45) - phase1-windows-noinstall-smoke-evidence
+
+### 검토 범위
+- 사용자 제보 기반 버그 수정 재검토
+  - `collect_windows_smoke_evidence.bat` → PowerShell `-BundleRoot` 인수 전달 시 trailing backslash 버그
+  - `windows_runtime_probe.ps1` `Normalize-PathInput` 이중 방어 보강
+  - `prepare_windows_smoke_evidence.ps1` `Normalize-PathInput` 동일 보강
+
+### 근본 원인 분석
+- `%~dp0`(cmd.exe)은 경로 끝에 `\`를 포함한다. (예: `C:\...\AIUsageWatcher\`)
+- 이를 `"..."` 안에 넣으면 `"C:\...\AIUsageWatcher\"` → `\"` 가 이스케이프로 처리되어 닫는 `"` 가 사라진다.
+- 결과적으로 PowerShell이 받는 `-BundleRoot` 값 = `C:\...\AIUsageWatcher"` (끝에 `"` 포함)
+- `Normalize-PathInput`의 대칭 따옴표 감지 로직이 비대칭(`앞 없음, 뒤만 있음`)에 반응하지 못해 `IsPathRooted` 예외 발생
+
+### 수정 내용
+- `collect_windows_smoke_evidence.bat` (근본 수정)
+  - `set "BUNDLE_ROOT=%BASE_DIR:~0,-1%"` 로 trailing `\` 제거 후 PowerShell 인수 전달
+- `windows_runtime_probe.ps1` (방어 보강)
+  - `Normalize-PathInput`에 비대칭 홀로 따옴표 제거 로직 추가 (Case 2/3 분기)
+- `prepare_windows_smoke_evidence.ps1` (방어 보강)
+  - 동일한 `Normalize-PathInput` 강화 적용
+
+### 문서 비교 결과
+- Planning -> Coding 누락 항목:
+  - 없음(버그 수정 범위는 기존 스크립트 안정성 개선으로 Planning 범위 내)
+- Coding -> Planning 역추적 불가 항목:
+  - 없음
+
+### 보수 검토 체크리스트
+- AC 충족 여부:
+  - 충족(경로 전달 버그 수정으로 실기기 증적 수집 흐름이 정상 작동)
+- 성능/리소스 병목 가능성:
+  - 낮음(문자열 처리 변경만 포함)
+- 오류 처리/예외 케이스 누락:
+  - 낮음(이중 방어로 비대칭 따옴표 케이스 추가 대응)
+- 테스트 전략의 빈틈:
+  - 중간(수정된 `.bat` 파일은 Windows 실기기에서만 최종 검증 가능)
+- 기술 부채 또는 과설계 위험:
+  - 낮음(최소한의 방어적 수정)
+- 배포 준비 상태:
+  - 충족(project terminal stage = `git_release`)
+
+### 발견 사항
+- 결함(Blocking): 0건
+- 확인 증적:
+  - 버그 재현 경로: `collect_windows_smoke_evidence.bat` → PowerShell → `Resolve-WorkspacePath` → `IsPathRooted` 예외
+  - 수정 후 로직: `set "BUNDLE_ROOT=%BASE_DIR:~0,-1%"` 로 trailing `\` 제거, `Normalize-PathInput` 비대칭 따옴표 방어
+  - py_compile/pytest 변경 없음 (PowerShell/BAT 파일 전용 수정)
+
+### 리스크/우려
+- 이전 dist 번들을 그대로 쓰는 경우 구버전 스크립트가 남아 동일 버그 재발 가능.
+- 해결: artifact 재빌드 또는 수정된 스크립트 3개를 bundle 폴더에 수동 교체 필요.
+
+### 되돌림 가이드
+- Planning으로 되돌릴 항목:
+  - 없음
+- Coding으로 되돌릴 항목:
+  - 없음
+
+### 배포 게이트 판정
+- Integration Test 진행 가능:
+  - 완료(pass)
+- 선행 보완 필요 항목:
+  - 없음(단, 실행 환경의 dist 번들을 최신 버전으로 교체 권장)
+
+### 결정/후속 조치
+- Review 판정:
+  - pass
+- 다음 단계:
+  - Git Release (수정 3개 파일 commit/tag/push)

@@ -18,18 +18,37 @@ function Normalize-PathInput {
     }
 
     $normalized = $PathValue.Trim()
-    if ($normalized.Length -ge 2) {
-        $startsWithDouble = $normalized.StartsWith('"')
-        $endsWithDouble = $normalized.EndsWith('"')
-        $startsWithSingle = $normalized.StartsWith("'")
-        $endsWithSingle = $normalized.EndsWith("'")
-        if (($startsWithDouble -and $endsWithDouble) -or ($startsWithSingle -and $endsWithSingle)) {
-            $normalized = $normalized.Substring(1, $normalized.Length - 2).Trim()
-        }
-    }
 
     # Strip common control characters that can leak from shell wrappers.
     $normalized = $normalized -replace "[\u0000-\u001F]", ""
+
+    if ($normalized.Length -ge 2) {
+        $startsWithDouble = $normalized.StartsWith('"')
+        $endsWithDouble   = $normalized.EndsWith('"')
+        $startsWithSingle = $normalized.StartsWith("'")
+        $endsWithSingle   = $normalized.EndsWith("'")
+
+        # Case 1: symmetric quotes -> remove both
+        if (($startsWithDouble -and $endsWithDouble) -or ($startsWithSingle -and $endsWithSingle)) {
+            $normalized = $normalized.Substring(1, $normalized.Length - 2).Trim()
+        }
+        # Case 2: trailing orphan quote only (cmd.exe set "VAR=path\" bug)
+        #   e.g. C:\path\to\dir" -> C:\path\to\dir
+        elseif ($endsWithDouble -and -not $startsWithDouble) {
+            $normalized = $normalized.TrimEnd('"').Trim()
+        }
+        elseif ($endsWithSingle -and -not $startsWithSingle) {
+            $normalized = $normalized.TrimEnd("'").Trim()
+        }
+        # Case 3: leading orphan quote only
+        elseif ($startsWithDouble -and -not $endsWithDouble) {
+            $normalized = $normalized.TrimStart('"').Trim()
+        }
+        elseif ($startsWithSingle -and -not $endsWithSingle) {
+            $normalized = $normalized.TrimStart("'").Trim()
+        }
+    }
+
     return $normalized
 }
 
