@@ -238,3 +238,54 @@
   - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/git-release/GitRelease.md
 - 참고 문서 위치:
   - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/integration-test/IntegrationTest.md
+
+## Release Run (2026-02-20 10:46 KST)
+
+## 입력 요약
+- Integration Test 게이트:
+  - pass (Review pass, py_compile/pytest 변경 없음, PowerShell/BAT 전용 수정)
+- 대상 브랜치:
+  - `main`
+
+## 변경 파일
+- staged files:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/collect_windows_smoke_evidence.bat
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/prepare_windows_smoke_evidence.ps1
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/windows_runtime_probe.ps1
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+
+## Commit
+- commit message:
+  - `fix: fix trailing backslash quote bug in collect_windows_smoke_evidence.bat and harden Normalize-PathInput`
+- commit sha:
+  - `21d06ea`
+
+## Tag
+- tag name:
+  - `v0.1.4-phase1`
+- tag message:
+  - `Phase1 hotfix: fix BAT trailing backslash quote bug in evidence collection`
+
+## Push 결과
+- branch push:
+  - `dfd2fc0..21d06ea  main -> main`
+- tag push:
+  - `[new tag] v0.1.4-phase1 -> v0.1.4-phase1`
+- remote 확인:
+  - `origin git@github.com:HeeyongPark/ai-usage-windows-watcher.git`
+
+## 실패/재시도
+- 실패 원인:
+  - 없음
+- 재시도 조건:
+  - 없음
+
+## Handoff
+- pipeline 다음 단계:
+  - Git Release 완료 (project terminal stage)
+- project override:
+  - 본 프로젝트는 `git_release`를 terminal stage로 사용(Deploy/Post 단계 미진행)
+- 입력 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/git-release/GitRelease.md
+- 참고 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
