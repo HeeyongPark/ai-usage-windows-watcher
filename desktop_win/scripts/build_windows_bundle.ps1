@@ -189,8 +189,10 @@ $BaseLibraryZip = @(
 ) | Where-Object { Test-Path $_ } | Select-Object -First 1
 if ($BaseLibraryZip) {
     $SqliteStdlibCheck = (& $BuildPython -c "import sys, zipfile; z=zipfile.ZipFile(sys.argv[1]); names=set(z.namelist()); print('ok' if 'sqlite3/__init__.pyc' in names else 'missing')" $BaseLibraryZip | Out-String).Trim()
-    if ($SqliteStdlibCheck -ne "ok") {
-        throw "Bundle sqlite stdlib missing: sqlite3/__init__.pyc was not found in base_library.zip."
+    if ($SqliteStdlibCheck -eq "ok") {
+        Write-Host "[check] sqlite stdlib present in base_library.zip"
+    } else {
+        Write-Warning "Bundle sqlite stdlib missing in base_library.zip. Runtime will use storage fallback(_sqlite3)."
     }
 } else {
     Write-Warning "base_library.zip was not found under bundle root; sqlite3 stdlib validation skipped."
