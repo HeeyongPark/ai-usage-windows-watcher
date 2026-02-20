@@ -141,3 +141,51 @@
   - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/git-release/GitRelease.md
 - 참고 문서 위치:
   - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/integration-test/IntegrationTest.md
+
+## Release Run (2026-02-20 09:23 KST)
+
+## 입력 요약
+- Integration Test 게이트:
+  - pass (`ui_optional` override, `16 passed in 0.09s`, Actions run `#9` success)
+- 대상 브랜치:
+  - `main`
+
+## 변경 파일
+- staged files:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/build_windows_bundle.ps1
+
+## Commit
+- commit message:
+  - `fix: allow sqlite stdlib fallback in windows bundle check`
+- commit sha:
+  - `46ff6d68d9dd649ea46d2539d7ece4c553cb4b12`
+
+## Tag
+- tag name:
+  - `v0.1.3-phase1`
+- tag message:
+  - `Phase1 windows bundle fallback gate passed`
+
+## Push 결과
+- branch push:
+  - `96b5633..46ff6d6  main -> main`
+- tag push:
+  - `[new tag] v0.1.3-phase1 -> v0.1.3-phase1`
+- remote 확인:
+  - `origin git@github.com:HeeyongPark/ai-usage-windows-watcher.git`
+
+## 실패/재시도
+- 실패 원인:
+  - 없음
+- 재시도 조건:
+  - 없음
+
+## Handoff
+- pipeline 다음 단계:
+  - Git Release 완료 (project terminal stage)
+- project override:
+  - 본 프로젝트는 `git_release`를 terminal stage로 사용(Deploy/Post 단계 미진행)
+- 입력 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/git-release/GitRelease.md
+- 참고 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/integration-test/IntegrationTest.md

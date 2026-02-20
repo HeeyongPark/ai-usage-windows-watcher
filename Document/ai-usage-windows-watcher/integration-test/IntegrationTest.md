@@ -5,7 +5,7 @@
 
 ## Latest Run
 - pre_deploy:
-  - pass (project override ui_optional, rerun 2026-02-19 22:03 KST)
+  - pass (project override ui_optional, rerun 2026-02-20 09:22 KST)
 - post_deploy:
   - pending
 
@@ -183,3 +183,50 @@
 - 프로젝트 한정 override:
   - `ui_required` 실기기 증적은 push 차단 게이트에서 제외
   - 자동 테스트 통과 시 git_release/push 진행
+
+## Pre-Deploy Run (2026-02-20 09:22 KST)
+- mode:
+  - pre_deploy
+- test_profile:
+  - ui_optional (project override)
+- scope:
+  - phase1-windows-exe-build-artifact-delivery
+
+### Planning AC -> 테스트 케이스 -> 코드 구현 매트릭스
+- phase1-windows-exe-build-artifact-delivery
+  - AC:
+    - GitHub Actions `Windows EXE Build`가 최신 커밋 기준으로 성공하고 아티팩트를 업로드한다.
+  - 테스트:
+    - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q`
+    - `python3 -m py_compile /Users/mirador/Documents/ai-usage-windows-watcher/agent/src/*.py /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/*.py /Users/mirador/Documents/ai-usage-windows-watcher/agent/tests/*.py /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/*.py`
+    - `https://api.github.com/repos/HeeyongPark/ai-usage-windows-watcher/actions/workflows/236211177/runs?per_page=3`
+    - `https://api.github.com/repos/HeeyongPark/ai-usage-windows-watcher/actions/runs/22205898127/artifacts`
+  - 구현:
+    - `/Users/mirador/Documents/ai-usage-windows-watcher/.github/workflows/windows-exe-build.yml`
+    - `/Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/build_windows_bundle.ps1`
+
+### 실행 증적
+- command:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q`
+  - `python3 -m py_compile /Users/mirador/Documents/ai-usage-windows-watcher/agent/src/*.py /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/*.py /Users/mirador/Documents/ai-usage-windows-watcher/agent/tests/*.py /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/*.py`
+  - `curl -sS "https://api.github.com/repos/HeeyongPark/ai-usage-windows-watcher/actions/workflows/236211177/runs?per_page=3"`
+  - `curl -sS "https://api.github.com/repos/HeeyongPark/ai-usage-windows-watcher/actions/runs/22205898127/artifacts"`
+- result:
+  - `16 passed in 0.09s`
+  - py_compile 오류 없음
+  - `Windows EXE Build` run `#9` (`22205898127`) completed `success`
+  - artifact `AIUsageWatcher-windows-bundle` (`5582483073`, `13082304 bytes`) 생성 확인
+
+### Gate 판정
+- overall:
+  - pass
+- git_release 진행 가능:
+  - yes
+- blockers:
+  - 없음
+
+### 운영 메모
+- 직전 실패(run `#8`) 원인:
+  - `sqlite3/__init__.pyc` 미포함 시 hard fail 처리
+- 조치:
+  - `desktop_win/scripts/build_windows_bundle.ps1`에서 `_sqlite3` fallback 경로를 warning 처리로 보정
