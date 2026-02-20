@@ -158,12 +158,12 @@ $evidenceText = $evidenceText -replace "runtime-context-<run-id>\\.json", ("runt
 $evidenceText = [regex]::Replace(
     $evidenceText,
     '(?m)^  - `.*runtime-context-.*`$',
-    ("  - `{0}`" -f $runtimeContextDisplay)
+    ('  - `{0}`' -f $runtimeContextDisplay)
 )
 $evidenceText = [regex]::Replace(
     $evidenceText,
     '(?m)^  - `.*windows-runtime-smoke-checklist.*`$',
-    ("  - `{0}`" -f $checklistDisplay)
+    ('  - `{0}`' -f $checklistDisplay)
 )
 $evidenceText = $evidenceText -replace "(?m)^- Bundle checksum \(optional\):.*$", "- Bundle checksum (optional): $($runtimeContext.bundle_exe_sha256)"
 
