@@ -677,3 +677,61 @@
   - pass
 - 다음 단계:
   - Git Release 기록 동기화 및 Cycle `done` 반영
+
+## Review Follow-up (2026-02-20 10:24) - phase1-windows-noinstall-smoke-evidence
+
+### 검토 범위
+- 사용자 제보 기반 스크립트 오류 2건 재검토
+  - `prepare_windows_smoke_evidence.ps1` 파서 오류
+  - `windows_runtime_probe.ps1` 경로 정규화 예외
+- 최신 원격 CI run 성공 여부 및 bundle 반영 여부
+
+### 문서 비교 결과
+- Planning -> Coding 누락 항목:
+  - 없음(Hotfix addendum에서 정의한 보강 항목 모두 반영)
+- Coding -> Planning 역추적 불가 항목:
+  - 없음
+
+### 보수 검토 체크리스트
+- AC 충족 여부:
+  - 충족(경로 정규화 보강 + 문자열 파서 오류 제거 + 최신 CI success)
+- 성능/리소스 병목 가능성:
+  - 낮음(스크립트 입력 정규화만 추가)
+- 오류 처리/예외 케이스 누락:
+  - 낮음(`IsPathRooted`/`GetFullPath` 예외에 원인 포함 메시지 추가)
+- 테스트 전략의 빈틈:
+  - 중간(실사용자 PC에 남은 구버전 dist 실행 시 동일 오류 가능)
+- 기술 부채 또는 과설계 위험:
+  - 낮음
+- 배포 준비 상태:
+  - 충족(project terminal stage = `git_release`)
+
+### 발견 사항
+- 결함(Blocking): 0건
+- 확인 증적:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q` -> `16 passed in 0.09s`
+  - `python3 -m py_compile ...` 오류 없음
+  - GitHub Actions run `#10` (`22206380280`) `success`
+  - GitHub Actions run `#11` (`22207320762`) `success`
+  - artifact `AIUsageWatcher-windows-bundle` (`5583044121`) 생성 확인
+
+### 리스크/우려
+- 사용자 환경에서 이전 bundle(`line 13 == IsPathRooted`)을 계속 실행하면 동일 증상이 재발한다.
+
+### 되돌림 가이드
+- Planning으로 되돌릴 항목:
+  - 없음
+- Coding으로 되돌릴 항목:
+  - 없음
+
+### 배포 게이트 판정
+- Integration Test 진행 가능:
+  - 완료(pass)
+- 선행 보완 필요 항목:
+  - 사용자 실행 환경 dist 교체(최신 artifact 또는 재빌드)
+
+### 결정/후속 조치
+- Review 판정:
+  - pass
+- 다음 단계:
+  - Integration Test/Git Release/Process Verification 기록 동기화

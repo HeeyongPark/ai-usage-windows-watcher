@@ -1898,3 +1898,191 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - closed
 - 담당 스킬:
   - cycle-manager
+
+## Cycle 48 (2026-02-20 10:24)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-noinstall-smoke-evidence
+- 사용자 장애 제보:
+  - `prepare_windows_smoke_evidence.ps1` parser error
+  - `windows_runtime_probe.ps1` `IsPathRooted` 예외
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 기존 done 태스크에서 bundle 실행 회귀가 보고되어 hotfix 코딩 사이클을 재개한다.
+- 방향:
+  - 증적 스크립트 2개를 최소 수정으로 보강하고 즉시 원격 빌드로 검증한다.
+- 고민거리:
+  - 사용자 환경이 최신 bundle인지(구버전 dist 잔존 여부)
+
+### 상태 전이
+- before:
+  - phase1-windows-noinstall-smoke-evidence: done
+- after:
+  - phase1-windows-noinstall-smoke-evidence: coding
+- 전이 이유:
+  - 운영 이슈 대응을 위한 hotfix 재오픈
+
+### 리스크 및 블로커
+- 리스크:
+  - 사용자 PC 로컬 dist 캐시가 구버전이면 동일 오류 재현 가능
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Review
+- 담당 스킬:
+  - review
+
+## Cycle 49 (2026-02-20 10:24)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-noinstall-smoke-evidence
+- Coding 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/coding/Coding.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 경로 정규화/백틱 파서 오류 수정이 완료됐다.
+- 방향:
+  - Review에서 AC/리스크/회귀 여부를 즉시 판정한다.
+- 고민거리:
+  - 없음
+
+### 상태 전이
+- before:
+  - phase1-windows-noinstall-smoke-evidence: coding
+- after:
+  - phase1-windows-noinstall-smoke-evidence: review
+- 전이 이유:
+  - 코딩 결과와 테스트 증적이 확보되어 리뷰 단계로 이동
+
+### 리스크 및 블로커
+- 리스크:
+  - 구버전 dist 실행 시 오탐성 재신고 가능
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Integration Test (Pre)
+- 담당 스킬:
+  - integration-test
+
+## Cycle 50 (2026-02-20 10:24)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-noinstall-smoke-evidence
+- Review 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+- 검증 증적:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q` -> `16 passed in 0.09s`
+  - GitHub Actions run `#10`/`#11` success
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - blocking 결함 없음으로 pre-deploy 게이트 재검증에 진입한다.
+- 방향:
+  - 원격 아티팩트 생성까지 확인 후 git_release로 전이한다.
+- 고민거리:
+  - 없음
+
+### 상태 전이
+- before:
+  - phase1-windows-noinstall-smoke-evidence: review
+- after:
+  - phase1-windows-noinstall-smoke-evidence: integration_test_pre
+- 전이 이유:
+  - Review pass 판정
+
+### 리스크 및 블로커
+- 리스크:
+  - 없음
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - Git Release
+- 담당 스킬:
+  - git-release
+
+## Cycle 51 (2026-02-20 10:24)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-noinstall-smoke-evidence
+- Integration Test 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/integration-test/IntegrationTest.md
+- Git Release 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/git-release/GitRelease.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - pre-deploy pass 기준으로 hotfix commit/push가 완료됐다.
+- 방향:
+  - terminal stage 완료 기준으로 done 재마감한다.
+- 고민거리:
+  - 없음
+
+### 상태 전이
+- before:
+  - phase1-windows-noinstall-smoke-evidence: integration_test_pre
+- after:
+  - phase1-windows-noinstall-smoke-evidence: git_release
+- 전이 이유:
+  - Integration Test pass 후 git-release 완료
+
+### 리스크 및 블로커
+- 리스크:
+  - 없음
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - done 마감
+- 담당 스킬:
+  - cycle-manager
+
+## Cycle 52 (2026-02-20 10:24)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-noinstall-smoke-evidence
+- 완료 근거:
+  - Review pass + Integration Test (Pre) pass + Git Release 완료
+- 종료 검증 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/cycle-manager/ProcessVerification.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - hotfix 사이클이 terminal stage를 충족했고 최종 프로세스 검증 결과도 pass다.
+- 방향:
+  - 태스크를 done으로 복귀시키고 큐를 닫는다.
+- 고민거리:
+  - 없음
+
+### 상태 전이
+- before:
+  - phase1-windows-noinstall-smoke-evidence: git_release
+- after:
+  - phase1-windows-noinstall-smoke-evidence: done
+- 전이 이유:
+  - project override terminal stage(`git_release`) 완료 + process verification pass
+
+### 리스크 및 블로커
+- 리스크:
+  - 사용자 측 구버전 dist 잔존 시 재실행 오류 가능
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - closed
+- 담당 스킬:
+  - cycle-manager

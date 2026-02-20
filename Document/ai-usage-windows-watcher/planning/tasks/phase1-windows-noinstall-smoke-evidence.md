@@ -102,3 +102,19 @@
   - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/integration-test/IntegrationTest.md
 - To Cycle Manager (조건부):
   - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/cycle-manager/Cycle.md
+
+## Hotfix Addendum (2026-02-20 10:24 KST)
+- 배경:
+  - 번들 배포본에서 `prepare_windows_smoke_evidence.ps1` Markdown 치환 구문 파서 오류와 `windows_runtime_probe.ps1` 경로 정규화 예외가 보고됐다.
+- 추가 목표:
+  - bundle 단독 실행 컨텍스트에서 경로 입력(`BundleRoot`, `OutputDir`, 템플릿 경로)이 제어문자/래핑 따옴표를 포함해도 안전하게 정규화한다.
+  - 증적 템플릿 치환 문자열(`` ` `` 포함)을 PowerShell 파서와 충돌 없이 처리한다.
+- 추가 구현 단위:
+  - `desktop_win/scripts/prepare_windows_smoke_evidence.ps1`
+    - 백틱 포함 포맷 문자열을 single-quoted format 식으로 교체
+    - `Normalize-PathInput` + `Resolve-WorkspacePath` 방어 로직 보강
+  - `desktop_win/scripts/windows_runtime_probe.ps1`
+    - 동일 경로 정규화 방어 로직 반영
+- 추가 완료 조건:
+  - GitHub Actions `Windows EXE Build` 최신 run에서 번들 생성 성공
+  - 사용자 실행 로그 기준 파서 오류/`IsPathRooted` 예외 재현이 중지됨(최신 번들 기준)

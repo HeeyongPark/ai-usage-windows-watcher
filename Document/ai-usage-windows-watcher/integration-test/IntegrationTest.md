@@ -230,3 +230,48 @@
   - `sqlite3/__init__.pyc` 미포함 시 hard fail 처리
 - 조치:
   - `desktop_win/scripts/build_windows_bundle.ps1`에서 `_sqlite3` fallback 경로를 warning 처리로 보정
+
+## Pre-Deploy Run (2026-02-20 10:24 KST)
+- mode:
+  - pre_deploy
+- test_profile:
+  - ui_optional (project override)
+- scope:
+  - phase1-windows-noinstall-smoke-evidence
+
+### Planning AC -> 테스트 케이스 -> 코드 구현 매트릭스
+- phase1-windows-noinstall-smoke-evidence
+  - AC:
+    - bundle 단독 실행 경로에서 증적 수집 스크립트가 파서 오류/경로 예외 없이 동작한다.
+  - 테스트:
+    - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q`
+    - `python3 -m py_compile /Users/mirador/Documents/ai-usage-windows-watcher/agent/src/*.py /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/*.py /Users/mirador/Documents/ai-usage-windows-watcher/agent/tests/*.py /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/*.py`
+    - `https://api.github.com/repos/HeeyongPark/ai-usage-windows-watcher/actions/runs/22206380280`
+    - `https://api.github.com/repos/HeeyongPark/ai-usage-windows-watcher/actions/runs/22207320762/artifacts`
+  - 구현:
+    - `/Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/prepare_windows_smoke_evidence.ps1`
+    - `/Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/windows_runtime_probe.ps1`
+
+### 실행 증적
+- command:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q`
+  - `python3 -m py_compile /Users/mirador/Documents/ai-usage-windows-watcher/agent/src/*.py /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/*.py /Users/mirador/Documents/ai-usage-windows-watcher/agent/tests/*.py /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/*.py`
+  - `curl -sS "https://api.github.com/repos/HeeyongPark/ai-usage-windows-watcher/actions/runs?per_page=10"`
+  - `curl -sS "https://api.github.com/repos/HeeyongPark/ai-usage-windows-watcher/actions/runs/22207320762/artifacts"`
+- result:
+  - `16 passed in 0.09s`
+  - py_compile 오류 없음
+  - `Windows EXE Build` run `#10` (`22206380280`) completed `success`
+  - `Windows EXE Build` run `#11` (`22207320762`) completed `success`
+  - artifact `AIUsageWatcher-windows-bundle` (`5583044121`) 생성 확인
+
+### Gate 판정
+- overall:
+  - pass
+- git_release 진행 가능:
+  - yes
+- blockers:
+  - 없음
+
+### 운영 메모
+- 사용자 제보 로그의 `line 13 == IsPathRooted`는 구버전 dist 스크립트 시그니처이며 최신 commit(`42c7a80`) 반영 bundle로 교체가 필요하다.

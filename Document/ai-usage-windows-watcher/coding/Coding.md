@@ -806,3 +806,79 @@
   - /Users/mirador/Documents/ai-usage-windows-watcher/.github/workflows/windows-exe-build.yml
 - 출력 문서 위치:
   - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+
+## Cycle 47 (2026-02-20 10:24)
+
+## 입력 요약
+- from_task:
+  - phase1-windows-noinstall-smoke-evidence
+- 사용자 오류 제보:
+  - `prepare_windows_smoke_evidence.ps1` Markdown 치환 줄에서 PowerShell parser error
+  - `windows_runtime_probe.ps1` `IsPathRooted` 호출 중 `경로에 잘못된 문자가 있습니다.`
+- 목표:
+  - bundle 단독 실행 경로 입력을 방어적으로 정규화하고, 증적 치환 문자열 구문 오류를 제거한다.
+
+## 설계 개요
+- 경로 입력 정규화(`Normalize-PathInput`)를 공통으로 적용해 제어문자/래핑 따옴표를 제거한다.
+- `IsPathRooted`/`GetFullPath`를 `try/catch`로 감싸 실패 시 원인 포함 메시지를 남긴다.
+- 백틱을 포함하는 문자열은 single-quoted format 표현식으로 치환해 파서 충돌을 방지한다.
+
+## 원칙 적용 체크
+- KISS:
+  - 스크립트 2개에 동일 패턴의 최소 보강만 반영
+- YAGNI:
+  - 신규 의존성/템플릿 구조 변경 없이 기존 흐름 유지
+- DRY:
+  - 경로 정규화 함수 재사용
+- SOLID:
+  - 경로 정규화 책임과 실제 프로브/증적 생성 책임 분리
+
+## 작업 분해
+- 작업 1:
+  - `prepare_windows_smoke_evidence.ps1` 포맷 문자열/경로 정규화 보강
+- 작업 2:
+  - `windows_runtime_probe.ps1` 경로 정규화 보강
+- 작업 3:
+  - 로컬 회귀 테스트 + GitHub Actions 원격 빌드 재검증
+
+## 변경 파일/모듈
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/prepare_windows_smoke_evidence.ps1
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/windows_runtime_probe.ps1
+
+## 테스트 전략
+- 자동:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q`
+  - `python3 -m py_compile /Users/mirador/Documents/ai-usage-windows-watcher/agent/src/*.py /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/*.py /Users/mirador/Documents/ai-usage-windows-watcher/agent/tests/*.py /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/*.py`
+- 원격:
+  - GitHub Actions `Windows EXE Build` run `#10` (`22206380280`) success
+  - GitHub Actions `Windows EXE Build` run `#11` (`22207320762`) success
+
+## 일정
+- Coding 완료, 다음 단계 Review 요청
+
+## 리스크와 대응
+- 리스크:
+  - 사용자 PC에 남아 있는 구버전 `dist`를 실행하면 동일 오류가 재현될 수 있음
+  - 대응:
+    - 최신 commit(`42c7a80`) 기준으로 bundle 재생성 또는 최신 artifact 재다운로드 안내
+
+## Handoff To Review
+- 검토 대상 범위:
+  - 경로 정규화 보강이 bundle 단독 실행 경로에 안전하게 적용됐는지
+  - run `#10/#11` 성공 및 artifact 생성 정합성
+- 핵심 변경 파일/모듈:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/prepare_windows_smoke_evidence.ps1
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/scripts/windows_runtime_probe.ps1
+- 테스트 결과/검증 포인트:
+  - `16 passed in 0.09s`
+  - py_compile 오류 없음
+  - Actions run `#10`, `#11` success + artifact 생성 확인
+- 잔여 리스크:
+  - 기존 로컬 dist 캐시를 지우지 않으면 구버전 스크립트가 실행될 수 있음
+- 입력 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-windows-noinstall-smoke-evidence.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/coding/Coding.md
+- 참고 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/README.md
+- 출력 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
