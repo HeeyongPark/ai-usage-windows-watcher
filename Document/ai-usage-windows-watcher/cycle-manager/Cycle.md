@@ -2086,3 +2086,41 @@ AI Usage Watcher for Windows (윈도우 AI 사용량 워처)
   - closed
 - 담당 스킬:
   - cycle-manager
+
+## Cycle 38 (2026-02-20 10:46)
+
+### 입력
+- 선택 태스크:
+  - phase1-windows-noinstall-smoke-evidence (hotfix)
+- 버그 제보:
+  - `collect_windows_smoke_evidence.bat` → PowerShell `-BundleRoot` 인수에 trailing `"` 포함 → `IsPathRooted` 예외
+- Git Release 산출물:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/git-release/GitRelease.md
+
+### 사용자 확인 게이트
+- 핵심 내용:
+  - 실사용자 제보 기반 버그 수정(cmd.exe trailing backslash quote 버그)을 Review → Git Release로 확정한다.
+- 방향:
+  - `.bat` 근본 수정 + PowerShell 이중 방어 보강 후 즉시 릴리즈
+- 고민거리:
+  - 없음
+
+### 상태 전이
+- before:
+  - phase1-windows-noinstall-smoke-evidence: done (hotfix commit 추가)
+- after:
+  - phase1-windows-noinstall-smoke-evidence: done (v0.1.4-phase1 확정)
+- 전이 이유:
+  - bugfix Review pass + git push `21d06ea` + tag `v0.1.4-phase1` 완료
+
+### 리스크 및 블로커
+- 리스크:
+  - 이전 dist 번들 보유 사용자는 재빌드 또는 스크립트 3개 수동 교체 필요
+- 블로커:
+  - 없음
+
+### 다음 액션
+- 다음 단계:
+  - closed (terminal stage 완료)
+- 담당 스킬:
+  - cycle-manager
