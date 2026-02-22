@@ -124,6 +124,15 @@ def _exchange_token(settings: OAuthSettings, code: str, code_verifier: str) -> d
         return json.loads(response.read().decode("utf-8"))
 
 
+def _open_auth_page(auth_request_url: str) -> None:
+    opened = webbrowser.open(auth_request_url)
+    if not opened:
+        raise RuntimeError(
+            "브라우저를 자동으로 열지 못했습니다. 아래 URL을 직접 열어 로그인해 주세요.\n"
+            f"{auth_request_url}"
+        )
+
+
 def save_token(token_payload: dict[str, Any]) -> Path:
     token_path = oauth_token_path()
     token_path.parent.mkdir(parents=True, exist_ok=True)
@@ -173,7 +182,11 @@ class OAuthPKCEClient:
             }
         )
         auth_request_url = f"{self.settings.auth_url}?{query}"
-        webbrowser.open(auth_request_url)
+        try:
+            _open_auth_page(auth_request_url)
+        except Exception:
+            server.server_close()
+            raise
 
         event = OAuthCallbackHandler.done_event
         if not event or not event.wait(timeout=timeout_sec):
@@ -196,4 +209,3 @@ class OAuthPKCEClient:
         )
         save_token(token_payload)
         return token_payload
-

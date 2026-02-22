@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import queue
 import threading
 import tkinter as tk
 from datetime import datetime
@@ -40,6 +41,8 @@ class UsageDashboardApp(tk.Tk):
         self.is_fullscreen = True
         self.refresh_interval_ms = resolve_refresh_interval_ms()
         self.refresh_job_id: str | None = None
+        self.oauth_login_in_progress = False
+        self.oauth_result_queue: queue.Queue[tuple[str, str]] = queue.Queue()
         self.budget_settings = load_budget_rule_settings()
 
         self.login_status_var = tk.StringVar(value="로그인 상태: 미로그인")
@@ -128,9 +131,10 @@ class UsageDashboardApp(tk.Tk):
         ttk.Label(auth_frame, textvariable=self.login_status_var).pack(
             side=tk.LEFT, anchor=tk.W
         )
-        ttk.Button(
+        self.oauth_login_button = ttk.Button(
             auth_frame, text="OAuth 로그인", command=self.start_oauth_login
-        ).pack(side=tk.RIGHT, padx=(8, 0))
+        )
+        self.oauth_login_button.pack(side=tk.RIGHT, padx=(8, 0))
 
         summary_frame = ttk.LabelFrame(root, text="요약", padding=self.section_padding)
         summary_frame.pack(fill=tk.X, pady=(10, 10))
@@ -226,36 +230,55 @@ class UsageDashboardApp(tk.Tk):
         token_hint = token.get("token_type", "saved").upper()
         self.login_status_var.set(f"로그인 상태: OAuth 완료 ({token_hint})")
 
+    def _set_oauth_login_ui_state(self, in_progress: bool) -> None:
+        self.oauth_login_in_progress = in_progress
+        if in_progress:
+            self.oauth_login_button.state(["disabled"])
+            self.login_status_var.set("로그인 상태: OAuth 진행 중 (브라우저 확인)")
+            return
+        self.oauth_login_button.state(["!disabled"])
+
+    def _poll_oauth_login_result(self) -> None:
+        try:
+            result_type, result_value = self.oauth_result_queue.get_nowait()
+        except queue.Empty:
+            self.after(200, self._poll_oauth_login_result)
+            return
+
+        self._set_oauth_login_ui_state(False)
+        if result_type == "success":
+            self.login_status_var.set(f"로그인 상태: OAuth 완료 ({result_value})")
+            messagebox.showinfo("OAuth", "로그인이 완료되었습니다.")
+            return
+
+        self.login_status_var.set("로그인 상태: 미로그인")
+        messagebox.showerror(
+            "OAuth 오류",
+            (
+                "로그인에 실패했습니다.\n"
+                f"{result_value}\n\n"
+                "desktop_win/.env.example를 참고해 OAuth 환경변수를 설정해 주세요."
+            ),
+        )
+
     def start_oauth_login(self) -> None:
+        if self.oauth_login_in_progress:
+            return
+
+        self._set_oauth_login_ui_state(True)
+
         def worker() -> None:
             try:
                 settings = OAuthSettings.from_env()
                 client = OAuthPKCEClient(settings)
                 token = client.authenticate(timeout_sec=180)
                 token_hint = token.get("token_type", "saved").upper()
-                self.after(
-                    0,
-                    lambda: self.login_status_var.set(
-                        f"로그인 상태: OAuth 완료 ({token_hint})"
-                    ),
-                )
-                self.after(
-                    0, lambda: messagebox.showinfo("OAuth", "로그인이 완료되었습니다.")
-                )
+                self.oauth_result_queue.put(("success", token_hint))
             except Exception as exc:  # noqa: BLE001
-                self.after(
-                    0,
-                    lambda: messagebox.showerror(
-                        "OAuth 오류",
-                        (
-                            "로그인에 실패했습니다.\n"
-                            f"{exc}\n\n"
-                            "desktop_win/.env.example를 참고해 OAuth 환경변수를 설정해 주세요."
-                        ),
-                    ),
-                )
+                self.oauth_result_queue.put(("error", str(exc)))
 
         threading.Thread(target=worker, daemon=True).start()
+        self.after(200, self._poll_oauth_login_result)
 
     def insert_sample_and_refresh(self) -> None:
         try:
