@@ -961,3 +961,90 @@
   - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/app.py
 - 출력 문서 위치:
   - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+
+## Cycle 49 (2026-02-22 23:21)
+
+## 입력 요약
+- from_task:
+  - phase1-win-agent-usage-collector (OAuth Browser Policy update)
+- 사용자 요구:
+  - OAuth 로그인을 Chrome에서 진행하는지 확인하고, Planning/Coding/Review 후 push까지 완료
+- 목표:
+  - OAuth 브라우저 실행 정책을 명시적으로 제어하고 기본값을 Chrome 우선으로 설정
+
+## 설계 개요
+- `oauth_client._open_auth_page()`에서 브라우저 모드를 환경변수로 해석한다.
+- 기본 정책은 `chrome`으로 두고, Chrome 실행 실패 시 기본 브라우저 fallback을 허용한다.
+- `chrome_only` 모드에서는 fallback 없이 즉시 실패해 운영자가 정책 위반을 바로 인지할 수 있게 한다.
+
+## 원칙 적용 체크
+- KISS:
+  - 기존 OAuth 플로우(auth URL 생성/콜백/토큰교환)는 유지, 브라우저 오픈 정책만 분리
+- YAGNI:
+  - 외부 라이브러리 추가 없이 표준 라이브러리(`subprocess`, `webbrowser`)로 해결
+- DRY:
+  - 브라우저 모드/Chrome 후보 탐색을 helper 함수로 분리
+- SOLID:
+  - 인증 로직과 브라우저 실행 정책 책임을 분리
+
+## 작업 분해
+- 작업 1:
+  - `desktop_win/src/oauth_client.py`에 브라우저 정책 helper 추가
+- 작업 2:
+  - `desktop_win/tests/test_oauth_client.py`에 모드별 회귀 테스트 추가
+- 작업 3:
+  - `desktop_win/README.md` OAuth 환경변수 문서 업데이트
+- 작업 4:
+  - py_compile + pytest 검증
+
+## 변경 파일/모듈
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/oauth_client.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/test_oauth_client.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/README.md
+
+## 의존성/통합 포인트
+- Python stdlib:
+  - `subprocess.Popen` (Chrome 실행)
+  - `webbrowser.open` (fallback)
+- OAuth 기존 플로우:
+  - `OAuthPKCEClient.authenticate()` 내 auth URL 오픈 단계
+
+## 테스트 전략
+- 자동:
+  - `python3 -m py_compile desktop_win/src/*.py desktop_win/tests/*.py`
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q desktop_win/tests`
+- 수동:
+  - Windows 실기기에서 `AUIW_OAUTH_BROWSER` 값별 동작 확인 권장
+
+## 일정
+- Coding 완료, 다음 단계 Review 요청
+
+## 리스크와 대응
+- 리스크:
+  - 사용자 PC에서 Chrome 경로 자동 탐색이 실패할 수 있음
+  - 대응:
+    - `AUIW_CHROME_PATH` 환경변수로 절대경로 강제 지정 경로 제공
+
+## 오픈 이슈
+- 없음(현재 범위 내)
+
+## Handoff To Review
+- 검토 대상 범위:
+  - OAuth 브라우저 정책이 요구사항(Chrome 우선)과 일치하는지
+  - 모드별 동작(`chrome/chrome_only/default`)이 테스트로 보장되는지
+- 핵심 변경 파일/모듈:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/oauth_client.py
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/test_oauth_client.py
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/README.md
+- 테스트 결과/검증 포인트:
+  - `21 passed in 0.10s`
+  - py_compile 오류 없음
+- 잔여 리스크:
+  - Windows 실기기에서 실제 설치 경로 편차 확인 필요
+- 입력 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-win-agent-usage-collector.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/coding/Coding.md
+- 참고 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/README.md
+- 출력 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md

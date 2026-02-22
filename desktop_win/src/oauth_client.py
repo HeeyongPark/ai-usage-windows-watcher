@@ -5,6 +5,8 @@ import hashlib
 import json
 import os
 import secrets
+import shutil
+import subprocess
 import threading
 import urllib.parse
 import urllib.request
@@ -124,7 +126,77 @@ def _exchange_token(settings: OAuthSettings, code: str, code_verifier: str) -> d
         return json.loads(response.read().decode("utf-8"))
 
 
+def _browser_mode() -> str:
+    return os.getenv("AUIW_OAUTH_BROWSER", "chrome").strip().lower()
+
+
+def _chrome_command_candidates() -> list[str]:
+    candidates: list[str] = []
+    custom = os.getenv("AUIW_CHROME_PATH", "").strip()
+    if custom:
+        candidates.append(custom)
+
+    if os.name == "nt":
+        for env_key in ("PROGRAMFILES", "PROGRAMFILES(X86)", "LOCALAPPDATA"):
+            base = os.getenv(env_key, "").strip()
+            if not base:
+                continue
+            candidate = Path(base) / "Google" / "Chrome" / "Application" / "chrome.exe"
+            candidates.append(str(candidate))
+    elif os.name == "posix":
+        candidates.append("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
+
+    for binary_name in (
+        "chrome",
+        "chrome.exe",
+        "google-chrome",
+        "google-chrome-stable",
+        "chromium",
+        "chromium-browser",
+    ):
+        resolved = shutil.which(binary_name)
+        if resolved:
+            candidates.append(resolved)
+
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for candidate in candidates:
+        normalized = candidate.strip()
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        deduped.append(normalized)
+    return deduped
+
+
+def _open_auth_page_in_chrome(auth_request_url: str) -> bool:
+    for chrome_cmd in _chrome_command_candidates():
+        try:
+            subprocess.Popen(  # noqa: S603
+                [chrome_cmd, "--new-window", auth_request_url],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            return True
+        except OSError:
+            continue
+    return False
+
+
 def _open_auth_page(auth_request_url: str) -> None:
+    mode = _browser_mode()
+    if mode not in {"chrome", "chrome_only", "default"}:
+        raise ValueError(
+            "AUIW_OAUTH_BROWSER must be one of: chrome, chrome_only, default"
+        )
+
+    if mode in {"chrome", "chrome_only"} and _open_auth_page_in_chrome(auth_request_url):
+        return
+    if mode == "chrome_only":
+        raise RuntimeError(
+            "Chrome 실행에 실패했습니다. AUIW_CHROME_PATH를 지정하거나 Chrome 설치를 확인해 주세요."
+        )
+
     opened = webbrowser.open(auth_request_url)
     if not opened:
         raise RuntimeError(

@@ -860,3 +860,57 @@
   - pass
 - 다음 단계:
   - Windows 실기기에서 앱 실행 smoke 1회 확인 후 Integration Test 문서 반영 권장
+
+## Review Follow-up (2026-02-22 23:21) - phase1-win-agent-usage-collector (OAuth Browser Policy)
+
+### 검토 범위
+- OAuth 브라우저 실행 정책이 Chrome-first 요구사항을 충족하는지
+- 코드/테스트/문서 간 정합성
+- 회귀 테스트 결과 확인
+
+### 문서 비교 결과
+- Planning -> Coding 누락 항목:
+  - 없음(브라우저 모드 정의, 변경 파일, 검증 항목 반영)
+- Coding -> Planning 역추적 불가 항목:
+  - 없음
+
+### 보수 검토 체크리스트
+- AC 충족 여부:
+  - 충족(`chrome` 기본 정책 + `chrome_only/default` 지원)
+- 성능/리소스 병목 가능성:
+  - 낮음(로그인 시작 시 1회 프로세스 실행)
+- 오류 처리/예외 케이스 누락:
+  - 낮음(Chrome 실패/invalid mode/브라우저 오픈 실패 모두 예외 처리)
+- 테스트 전략의 빈틈:
+  - 중간(Windows 실기기 경로 편차는 수동 확인 권장)
+- 기술 부채 또는 과설계 위험:
+  - 낮음
+- 배포 준비 상태:
+  - 충족
+
+### 발견 사항
+- 결함(Blocking): 0건
+- 확인 증적:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q desktop_win/tests` -> `21 passed in 0.10s`
+  - `python3 -m py_compile desktop_win/src/*.py desktop_win/tests/*.py` 오류 없음
+
+### 리스크/우려
+- 일부 Windows 환경에서 Chrome 탐색 경로가 다를 수 있어 `AUIW_CHROME_PATH` 수동 지정이 필요할 수 있다.
+
+### 되돌림 가이드
+- Planning으로 되돌릴 항목:
+  - 없음
+- Coding으로 되돌릴 항목:
+  - 없음
+
+### 배포 게이트 판정
+- Integration Test 진행 가능:
+  - 가능(pass)
+- 선행 보완 필요 항목:
+  - 없음(권장: 실기기 smoke 1회)
+
+### 결정/후속 조치
+- Review 판정:
+  - pass
+- 다음 단계:
+  - Git push 및 Windows 실기기에서 `AUIW_OAUTH_BROWSER` 모드별 smoke 체크

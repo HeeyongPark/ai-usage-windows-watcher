@@ -140,3 +140,22 @@
     - 목표: 마지막 갱신 시각/갱신 주기 표시
 - 검증 추가:
   - refresh interval 기본값/최소값 단위 테스트 통과
+
+## Planning Update (2026-02-22 23:21 KST) - OAuth Browser Policy (Chrome-first)
+- 사용자 추가 요구:
+  - OAuth 로그인을 크롬에서 진행하는지 명확화하고, 필요 시 크롬 우선 실행으로 고정
+- 확장 구현 단위:
+  - 작업 J: OAuth 브라우저 정책 제어
+    - 목표: 기본 동작을 `chrome` 우선으로 설정하고 fallback/강제 모드를 환경변수로 제공
+- 변경 파일:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/oauth_client.py
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/test_oauth_client.py
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/README.md
+- 세부 정책:
+  - `AUIW_OAUTH_BROWSER=chrome`(기본): Chrome 우선, 실패 시 시스템 기본 브라우저 fallback
+  - `AUIW_OAUTH_BROWSER=chrome_only`: Chrome으로만 실행, 실패 시 즉시 오류
+  - `AUIW_OAUTH_BROWSER=default`: 시스템 기본 브라우저 사용
+  - `AUIW_CHROME_PATH`: 자동 탐색 실패 시 Chrome 실행 파일 절대 경로 지정
+- 검증 추가:
+  - 브라우저 모드별 단위 테스트(`default`, `chrome`, `chrome_only`, invalid mode)
+  - py_compile + desktop_win 테스트 통과

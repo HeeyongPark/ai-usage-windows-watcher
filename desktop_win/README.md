@@ -111,6 +111,14 @@ Required:
 - `AUIW_OAUTH_TOKEN_URL`
 - `AUIW_OAUTH_CLIENT_ID`
 
+Optional browser control:
+- `AUIW_OAUTH_BROWSER`
+  - `chrome` (default): Chrome 우선 실행, 실패 시 시스템 기본 브라우저 fallback
+  - `chrome_only`: Chrome으로만 실행(실패 시 오류)
+  - `default`: 시스템 기본 브라우저로 실행
+- `AUIW_CHROME_PATH`
+  - Chrome 실행 파일 절대 경로(자동 탐색 실패 시 사용)
+
 The app stores OAuth tokens at:
 - Windows: `%APPDATA%\\AIUsageWatcher\\oauth_token.json`
 - Others: `~/.ai-usage-watcher/oauth_token.json`
