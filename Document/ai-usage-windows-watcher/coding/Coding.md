@@ -882,3 +882,82 @@
   - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/README.md
 - 출력 문서 위치:
   - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+
+## Cycle 48 (2026-02-22 22:55)
+
+## 입력 요약
+- from_task:
+  - phase1-desktop-dashboard (hotfix addendum)
+- 사용자 오류 제보:
+  - `_tkinter.TclError: expected integer but got "UI"`
+- 목표:
+  - Tkinter 기본 폰트 설정의 파싱 오류를 제거해 앱 초기화 크래시를 해결한다.
+
+## 설계 개요
+- Tk `option_add("*Font", ...)`에 공백 패밀리명을 안전하게 전달하기 위한 헬퍼 `_font_option_value(size)`를 추가한다.
+- 반환 포맷을 `"{Segoe UI} {size}"`로 고정해 Tk 폰트 파서가 패밀리/크기를 정확히 구분하게 한다.
+
+## 원칙 적용 체크
+- KISS:
+  - 폰트 옵션 문자열 포맷만 수정하고 레이아웃 구조는 유지
+- YAGNI:
+  - 테마 시스템 재구성 없이 오류 원인 구간만 국소 수정
+- DRY:
+  - compact/normal 모드가 동일 헬퍼를 재사용
+- SOLID:
+  - 폰트 문자열 생성 책임을 헬퍼로 분리
+
+## 작업 분해
+- 작업 1:
+  - `desktop_win/src/app.py`에 `_font_option_value` 추가 및 `option_add` 호출부 교체
+- 작업 2:
+  - `desktop_win/tests/test_refresh_interval.py`에 폰트 스펙 회귀 테스트 추가
+- 작업 3:
+  - py_compile + pytest 실행으로 회귀 검증
+
+## 변경 파일/모듈
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/app.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/test_refresh_interval.py
+
+## 의존성/통합 포인트
+- Tkinter `option_add` 폰트 스펙 파싱 규칙
+- 기존 대시보드 UI 컴포넌트 생성 흐름(`LabelFrame`, `Notebook`, `Treeview`)
+
+## 테스트 전략
+- 자동:
+  - `python3 -m py_compile desktop_win/src/*.py desktop_win/tests/*.py`
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q desktop_win/tests`
+- 수동:
+  - Windows 런타임에서 앱 실행 후 초기 화면 진입 확인(다음 단계 권장)
+
+## 일정
+- Coding 완료, 다음 단계 Review 요청
+
+## 리스크와 대응
+- 리스크:
+  - 폰트 미설치 환경에서 대체 폰트로 렌더링 차이가 발생할 수 있음
+  - 대응:
+    - 본 수정은 파싱 크래시 제거에 집중하고, 폰트 fallback 정책은 별도 개선 태스크로 분리
+
+## 오픈 이슈
+- 없음(이번 hotfix 범위 내)
+
+## Handoff To Review
+- 검토 대상 범위:
+  - 폰트 문자열 변경이 실제 traceback 원인을 해소하는지
+  - compact/normal 모드 양쪽에서 동일하게 적용되는지
+- 핵심 변경 파일/모듈:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/app.py
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/test_refresh_interval.py
+- 테스트 결과/검증 포인트:
+  - `15 passed in 0.12s`
+  - py_compile 오류 없음
+- 잔여 리스크:
+  - Windows 실기기 시각적 폰트 fallback 차이는 미확인
+- 입력 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-desktop-dashboard.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/coding/Coding.md
+- 참고 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/app.py
+- 출력 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md

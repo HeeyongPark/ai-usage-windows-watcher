@@ -26,6 +26,10 @@ def resolve_refresh_interval_ms() -> int:
     return seconds * 1000
 
 
+def _font_option_value(size: int) -> str:
+    return f"{{Segoe UI}} {size}"
+
+
 class UsageDashboardApp(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
@@ -71,7 +75,7 @@ class UsageDashboardApp(tk.Tk):
     def _configure_styles(self) -> None:
         style = ttk.Style(self)
         if self.compact_mode:
-            self.option_add("*Font", "Segoe UI 10")
+            self.option_add("*Font", _font_option_value(10))
             style.configure("Treeview", rowheight=32, font=("Segoe UI", 10))
             style.configure("Treeview.Heading", font=("Segoe UI", 10, "bold"))
             self.title_font = ("Segoe UI", 14, "bold")
@@ -79,7 +83,7 @@ class UsageDashboardApp(tk.Tk):
             self.container_padding = 8
             self.section_padding = 8
         else:
-            self.option_add("*Font", "Segoe UI 11")
+            self.option_add("*Font", _font_option_value(11))
             style.configure("Treeview", rowheight=30, font=("Segoe UI", 11))
             style.configure("Treeview.Heading", font=("Segoe UI", 11, "bold"))
             self.title_font = ("Segoe UI", 18, "bold")

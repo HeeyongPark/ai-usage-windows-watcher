@@ -97,3 +97,41 @@
   - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/integration-test/IntegrationTest.md
 - To Cycle Manager (조건부):
   - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/cycle-manager/Cycle.md
+
+## Addendum (2026-02-22 22:55 KST) - Tk Font Spec Crash Hotfix
+
+### 입력 증상
+- Windows 실행 시 대시보드 초기 레이아웃 생성 단계에서 아래 오류로 앱이 종료됨.
+  - `_tkinter.TclError: expected integer but got "UI"`
+- traceback 기준:
+  - `desktop_win/src/app.py` `UsageDashboardApp.__init__` -> `_build_layout()`
+
+### 문제 정의
+- `self.option_add("*Font", "Segoe UI 11")` 형태 문자열은 Tk 폰트 파서에서 `family=Segoe`, `size=UI`로 오해될 수 있다.
+- 결과적으로 공백이 포함된 폰트 패밀리(`Segoe UI`)가 정수 크기 파싱 오류를 유발한다.
+
+### 구현 단위 (Hotfix)
+- 작업 D: 기본 폰트 옵션 문자열 안전화
+  - 변경 파일:
+    - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/app.py
+  - 구현 상세:
+    - 폰트 옵션 헬퍼 `_font_option_value(size)` 추가
+    - `*Font` 값을 `"{Segoe UI} 11"` 형태로 지정해 Tk 파서 오해 방지
+  - 테스트:
+    - `desktop_win/tests/test_refresh_interval.py`에 헬퍼 회귀 테스트 추가
+
+### 테스트 설계 (Hotfix)
+- 기능 테스트:
+  - 앱 초기화 시 `LabelFrame/Notebook` 생성 구간에서 TclError 미발생 확인
+- 회귀 테스트:
+  - 기존 refresh interval 테스트 영향 없음
+- 실패/예외 테스트:
+  - 숫자 크기 파싱이 필요한 폰트 옵션이 brace 형식으로 유지되는지 단위 테스트 검증
+
+### 완료 조건 (Hotfix DoD)
+- DoD 1:
+  - `expected integer but got "UI"` 오류가 재현되지 않는다.
+- DoD 2:
+  - desktop_win 테스트가 통과한다.
+- DoD 3:
+  - Coding/Review 문서에 수정 근거와 검증 결과가 연결된다.

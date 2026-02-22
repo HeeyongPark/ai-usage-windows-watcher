@@ -806,3 +806,57 @@
   - pass
 - 다음 단계:
   - Git Release (수정 3개 파일 commit/tag/push)
+
+## Review Follow-up (2026-02-22 22:55) - phase1-desktop-dashboard (Tk Font Spec Hotfix)
+
+### 검토 범위
+- 대시보드 초기화 크래시 원인(`expected integer but got "UI"`) 수정 정합성
+- Planning addendum과 Coding 결과의 추적 가능성
+- 테스트 증적(py_compile/pytest) 확인
+
+### 문서 비교 결과
+- Planning -> Coding 누락 항목:
+  - 없음(폰트 파싱 원인, 수정 방식, 테스트 계획 모두 반영)
+- Coding -> Planning 역추적 불가 항목:
+  - 없음
+
+### 보수 검토 체크리스트
+- AC 충족 여부:
+  - 충족(문제 원인 구간 직접 수정 + 회귀 테스트 추가)
+- 성능/리소스 병목 가능성:
+  - 낮음(문자열 생성 헬퍼 추가 수준)
+- 오류 처리/예외 케이스 누락:
+  - 낮음(공백 패밀리명 파싱 오류 재발 방지)
+- 테스트 전략의 빈틈:
+  - 중간(Windows 실기기 UI 실행 확인은 별도)
+- 기술 부채 또는 과설계 위험:
+  - 낮음
+- 배포 준비 상태:
+  - 충족(핫픽스 단위 변경)
+
+### 발견 사항
+- 결함(Blocking): 0건
+- 확인 증적:
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q desktop_win/tests` -> `15 passed in 0.12s`
+  - `python3 -m py_compile desktop_win/src/*.py desktop_win/tests/*.py` 오류 없음
+
+### 리스크/우려
+- 실제 Windows 폰트 설치 상태에 따라 렌더링 차이는 있을 수 있으나, 본 건의 크래시(`TclError`)와는 분리된 범주다.
+
+### 되돌림 가이드
+- Planning으로 되돌릴 항목:
+  - 없음
+- Coding으로 되돌릴 항목:
+  - 없음
+
+### 배포 게이트 판정
+- Integration Test 진행 가능:
+  - 가능(pass)
+- 선행 보완 필요 항목:
+  - 없음
+
+### 결정/후속 조치
+- Review 판정:
+  - pass
+- 다음 단계:
+  - Windows 실기기에서 앱 실행 smoke 1회 확인 후 Integration Test 문서 반영 권장
