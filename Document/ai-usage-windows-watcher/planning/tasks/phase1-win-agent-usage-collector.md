@@ -159,3 +159,25 @@
 - 검증 추가:
   - 브라우저 모드별 단위 테스트(`default`, `chrome`, `chrome_only`, invalid mode)
   - py_compile + desktop_win 테스트 통과
+
+## Planning Update (2026-02-22 23:41 KST) - Codex CLI Auth Bridge
+- 사용자 추가 요구:
+  - OpenClaw처럼 ChatGPT OAuth(Codex)를 승인하고 해당 사용량을 대시보드에서 확인
+- 문제 재정의:
+  - 일반 OAuth endpoint 입력 방식(`AUIW_OAUTH_*`)은 OpenAI Codex(ChatGPT OAuth) 흐름과 맞지 않음
+- 확장 구현 단위:
+  - 작업 K: Codex CLI 로그인 상태 재사용
+    - 목표: 앱 로그인 버튼이 `codex login status` / `codex login --device-auth`를 호출해 Codex 인증을 연결
+  - 작업 L: 문서/설정 전환
+    - 목표: OAuth 환경변수 기반 가이드 제거, Codex CLI 기반 가이드로 통일
+- 변경 파일:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/codex_auth.py
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/app.py
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/test_codex_auth.py
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/test_refresh_interval.py
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/.env.example
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/README.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/WINDOWS_USAGE.md
+- 검증 추가:
+  - Codex 로그인 상태 파싱/timeout/미설치 시나리오 단위 테스트
+  - py_compile + desktop_win test suite 통과

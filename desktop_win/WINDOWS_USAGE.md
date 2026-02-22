@@ -25,18 +25,20 @@ cd .\desktop_win\
 powershell -ExecutionPolicy Bypass -File .\scripts\build_windows_bundle.ps1
 ```
 
-## 3) OAuth 환경변수 설정
-1. `AIUsageWatcher\.env.example`를 복사해 `AIUsageWatcher\.env` 생성
-2. 아래 3개를 반드시 채움
-- `AUIW_OAUTH_AUTH_URL`
-- `AUIW_OAUTH_TOKEN_URL`
-- `AUIW_OAUTH_CLIENT_ID`
-
-참고:
-- 앱 실행 시 `.env` 탐색 우선순위:
-  - `sys._MEIPASS\.env`
-  - `AIUsageWatcher.exe`와 같은 폴더의 `.env`
-  - `AIUsageWatcher.exe`와 같은 폴더 아래 `_internal\.env`
+## 3) Codex 로그인 준비
+1. Codex CLI 설치 확인:
+```powershell
+codex --version
+```
+2. ChatGPT OAuth로 Codex 로그인:
+```powershell
+codex login --device-auth
+```
+3. 로그인 상태 확인:
+```powershell
+codex login status
+```
+4. 앱에서 `Codex 로그인` 버튼을 누르면 상태를 재확인하고, 필요 시 device-auth를 재실행한다.
 
 ## 4) 앱 실행 (무설치)
 - `AIUsageWatcher\run_ai_usage_watcher.bat` 더블클릭 (권장)
@@ -58,7 +60,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build_windows_bundle.ps1
 ```
 
 ## 5) 기본 사용 순서
-1. `OAuth 로그인` 버튼 클릭
+1. `Codex 로그인` 버튼 클릭
 2. 브라우저에서 로그인 완료
 3. 앱으로 돌아와 로그인 상태 확인
 4. `Codex 샘플 1건 생성`으로 테스트 데이터 생성
@@ -92,7 +94,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build_windows_bundle.ps1
   - `예산 경고`: 예산 초과
 
 ## 9) 데이터/토큰 저장 위치
-- OAuth 토큰: `%APPDATA%\AIUsageWatcher\oauth_token.json`
+- Codex 인증 토큰: Codex CLI 기본 저장소(플랫폼 기본 경로)
 - 사용량 DB 기본 경로: `%USERPROFILE%\.ai-usage-watcher\usage.db`
 - DB 경로 변경 시 `AUIW_DB_PATH` 환경변수 사용
 
@@ -130,7 +132,7 @@ powershell -ExecutionPolicy Bypass -File .\windows_runtime_probe.ps1 -BundleRoot
 ## 11) Phase 1 게이트 기준
 - Gate A: 자동 테스트(`agent\.venv\Scripts\python -m pytest -q`) 통과
 - Gate B: Win10/Win11 실기기 무설치(onedir) 스모크 각 1회 이상 수행
-- Gate C: 실패 케이스(OAuth 설정 누락/DB 경로 변경/갱신 주기 최소값/런처 또는 onedir 폴더 누락/frozen import 실패) 증적 확보
+- Gate C: 실패 케이스(Codex CLI 미설치/미로그인/DB 경로 변경/갱신 주기 최소값/런처 또는 onedir 폴더 누락/frozen import 실패) 증적 확보
 
 ## 12) 개발자 경로(참고)
 - 일반 사용자 경로가 아닌 개발/디버깅 목적일 때만 사용

@@ -1,9 +1,9 @@
-# Windows UI (OAuth + Codex Usage)
+# Windows UI (Codex Login + Usage)
 
 Tkinter-based Windows desktop MVP.
 
 ## What this does now
-- OAuth login button (Authorization Code + PKCE).
+- Codex login button (ChatGPT OAuth via Codex CLI).
 - Codex daily/weekly usage tabs from local SQLite.
 - Quick sample insertion for demo.
 - Default fullscreen startup for small displays (5-inch monitor friendly).
@@ -31,7 +31,7 @@ Bundle output:
 End-user launch:
 - Double-click `run_ai_usage_watcher.bat`
 - For smoke evidence, double-click `collect_windows_smoke_evidence.bat`
-- Fill `.env` OAuth values before first login
+- Install Codex CLI and complete `codex login --device-auth` (or login inside app)
 
 Troubleshooting (`Failed to load Python DLL ... _internal\python312.dll`):
 - Always launch from `desktop_win\dist\AIUsageWatcher\run_ai_usage_watcher.bat`.
@@ -97,31 +97,14 @@ cd C:\path\to\ai-usage-windows-watcher\desktop_win\
 powershell -ExecutionPolicy Bypass -File .\scripts\prepare_windows_smoke_evidence.ps1 -BundleRoot .\dist\AIUsageWatcher
 ```
 
-## OAuth config
-Create `.env` from `.env.example` before launching.
-`.env` loading behavior:
-- development mode: auto-load `desktop_win/.env`
-- bundled (`frozen`) mode: resolve in this order
-  - `sys._MEIPASS/.env`
-  - `AIUsageWatcher.exe` directory `.env`
-  - `AIUsageWatcher.exe` directory `_internal/.env`
+## Codex login config
+Prerequisite:
+- Install Codex CLI and verify `codex login status` works
+- If not logged in, run `codex login --device-auth` once
 
-Required:
-- `AUIW_OAUTH_AUTH_URL`
-- `AUIW_OAUTH_TOKEN_URL`
-- `AUIW_OAUTH_CLIENT_ID`
-
-Optional browser control:
-- `AUIW_OAUTH_BROWSER`
-  - `chrome` (default): Chrome 우선 실행, 실패 시 시스템 기본 브라우저 fallback
-  - `chrome_only`: Chrome으로만 실행(실패 시 오류)
-  - `default`: 시스템 기본 브라우저로 실행
-- `AUIW_CHROME_PATH`
-  - Chrome 실행 파일 절대 경로(자동 탐색 실패 시 사용)
-
-The app stores OAuth tokens at:
-- Windows: `%APPDATA%\\AIUsageWatcher\\oauth_token.json`
-- Others: `~/.ai-usage-watcher/oauth_token.json`
+Optional app env:
+- `AUIW_CODEX_LOGIN_TIMEOUT_SEC` (default `300`)
+- `AUIW_REFRESH_INTERVAL_SEC` (default `3600`)
 
 ## Fullscreen controls
 - `F11`: toggle fullscreen

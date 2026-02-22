@@ -1048,3 +1048,98 @@
   - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/README.md
 - 출력 문서 위치:
   - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md
+
+## Cycle 50 (2026-02-22 23:41)
+
+## 입력 요약
+- from_task:
+  - phase1-win-agent-usage-collector (Codex CLI Auth Bridge)
+- 사용자 요구:
+  - OpenClaw처럼 ChatGPT OAuth(Codex) 승인 플로우를 쓰고, 해당 사용량을 대시보드로 확인
+- 목표:
+  - 기존 일반 OAuth(PKCE custom endpoint) 대신 Codex CLI 인증 상태 재사용 방식으로 로그인 UX 전환
+
+## 설계 개요
+- 신규 모듈 `codex_auth.py`를 추가해 Codex CLI 명령을 캡슐화한다.
+  - 상태 조회: `codex login status`
+  - 로그인 실행: `codex login --device-auth`
+- 앱 로그인 버튼은 위 모듈을 비동기 호출해 UI를 갱신한다.
+- `.env`의 OAuth 필수값 의존을 제거하고, Codex CLI 준비/로그인 절차를 문서로 안내한다.
+
+## 원칙 적용 체크
+- KISS:
+  - 기존 대시보드/집계 로직은 유지, 인증 경로만 교체
+- YAGNI:
+  - OpenAI 비공개 OAuth endpoint 추정 구현 없이 공식 CLI 플로우 재사용
+- DRY:
+  - Codex CLI 실행/출력 파싱 로직을 `codex_auth.py`로 단일화
+- SOLID:
+  - 인증 명령 실행 책임(app 분리)과 UI 갱신 책임(app 유지) 분리
+
+## 작업 분해
+- 작업 1:
+  - `desktop_win/src/codex_auth.py` 추가 (status/device-auth/timeout 처리)
+- 작업 2:
+  - `desktop_win/src/app.py` 로그인 버튼 흐름을 Codex CLI 기반으로 교체
+- 작업 3:
+  - 테스트 추가/수정 (`test_codex_auth.py`, `test_refresh_interval.py`)
+- 작업 4:
+  - 운영 문서/설정 파일 업데이트 (`README`, `WINDOWS_USAGE`, `.env.example`)
+
+## 변경 파일/모듈
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/codex_auth.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/app.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/test_codex_auth.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/test_refresh_interval.py
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/.env.example
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/README.md
+- /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/WINDOWS_USAGE.md
+
+## 의존성/통합 포인트
+- Codex CLI executable (`codex`) 설치 여부
+- CLI 출력 문자열(`Logged in using ...`, `Not logged in`) 파싱
+- Tkinter 비동기 UI 큐 업데이트
+
+## 테스트 전략
+- 자동:
+  - `python3 -m py_compile desktop_win/src/*.py desktop_win/tests/*.py`
+  - `/Users/mirador/Documents/ai-usage-windows-watcher/agent/.venv/bin/python -m pytest -q desktop_win/tests`
+- 수동:
+  - Windows에서 `codex login --device-auth` 이후 앱 `Codex 로그인` 버튼 동작 확인
+
+## 일정
+- Coding 완료, 다음 단계 Review 요청
+
+## 리스크와 대응
+- 리스크:
+  - Windows 번들 환경에서 `codex` CLI가 PATH에 없으면 로그인 실패
+  - 대응:
+    - 명시적 오류 메시지로 안내하고, 사전 설치/로그인 절차를 문서화
+- 리스크:
+  - CLI 출력 포맷이 바뀌면 상태 파싱이 흔들릴 수 있음
+  - 대응:
+    - 실패 시 raw output을 그대로 사용자 오류창에 전달
+
+## 오픈 이슈
+- 없음(현재 범위 내)
+
+## Handoff To Review
+- 검토 대상 범위:
+  - OpenClaw 유사 흐름(Codex CLI auth bridge) 요구사항 충족 여부
+  - 테스트/문서/앱 동작의 정합성
+- 핵심 변경 파일/모듈:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/codex_auth.py
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/src/app.py
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/tests/test_codex_auth.py
+- 테스트 결과/검증 포인트:
+  - `28 passed in 0.13s`
+  - py_compile 오류 없음
+- 잔여 리스크:
+  - 실사용 Windows 환경의 Codex CLI 설치 경로/PATH 편차
+- 입력 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/planning/tasks/phase1-win-agent-usage-collector.md
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/coding/Coding.md
+- 참고 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/desktop_win/WINDOWS_USAGE.md
+- 출력 문서 위치:
+  - /Users/mirador/Documents/ai-usage-windows-watcher/Document/ai-usage-windows-watcher/review/Review.md

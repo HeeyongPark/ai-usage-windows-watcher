@@ -8,8 +8,8 @@ from datetime import datetime
 from tkinter import messagebox, ttk
 
 from budget_rules import evaluate_budget_alert, load_budget_rule_settings
+from codex_auth import codex_login_device_auth, codex_login_status
 from env_loader import load_env_file
-from oauth_client import OAuthPKCEClient, OAuthSettings, load_token
 from usage_service import (
     codex_daily_summary,
     codex_weekly_summary,
@@ -27,6 +27,15 @@ def resolve_refresh_interval_ms() -> int:
     return seconds * 1000
 
 
+def resolve_codex_login_timeout_sec() -> int:
+    raw = os.getenv("AUIW_CODEX_LOGIN_TIMEOUT_SEC", "300").strip()
+    try:
+        seconds = int(raw)
+    except ValueError:
+        seconds = 300
+    return max(60, seconds)
+
+
 def _font_option_value(size: int) -> str:
     return f"{{Segoe UI}} {size}"
 
@@ -40,12 +49,13 @@ class UsageDashboardApp(tk.Tk):
         self.compact_mode = self.screen_width <= 1024 or self.screen_height <= 768
         self.is_fullscreen = True
         self.refresh_interval_ms = resolve_refresh_interval_ms()
+        self.codex_login_timeout_sec = resolve_codex_login_timeout_sec()
         self.refresh_job_id: str | None = None
-        self.oauth_login_in_progress = False
-        self.oauth_result_queue: queue.Queue[tuple[str, str]] = queue.Queue()
+        self.codex_login_in_progress = False
+        self.codex_result_queue: queue.Queue[tuple[str, str]] = queue.Queue()
         self.budget_settings = load_budget_rule_settings()
 
-        self.login_status_var = tk.StringVar(value="로그인 상태: 미로그인")
+        self.login_status_var = tk.StringVar(value="로그인 상태: Codex 미로그인")
         self.total_tokens_var = tk.StringVar(value="총 토큰: 0")
         self.total_requests_var = tk.StringVar(value="총 요청: 0")
         self.total_sessions_var = tk.StringVar(value="총 세션: 0")
@@ -115,7 +125,7 @@ class UsageDashboardApp(tk.Tk):
 
         subtitle = ttk.Label(
             root,
-            text="최초 로그인은 OAuth, 사용량 데이터는 로컬 SQLite 조회",
+            text="Codex 로그인(ChatGPT OAuth)은 Codex CLI를 통해 수행, 사용량 데이터는 로컬 SQLite 조회",
             font=self.subtitle_font,
         )
         subtitle.pack(anchor="w", pady=(4, 8))
@@ -125,16 +135,16 @@ class UsageDashboardApp(tk.Tk):
         )
         hint.pack(anchor="w", pady=(0, 10))
 
-        auth_frame = ttk.LabelFrame(root, text="인증", padding=self.section_padding)
+        auth_frame = ttk.LabelFrame(root, text="Codex 인증", padding=self.section_padding)
         auth_frame.pack(fill=tk.X)
 
         ttk.Label(auth_frame, textvariable=self.login_status_var).pack(
             side=tk.LEFT, anchor=tk.W
         )
-        self.oauth_login_button = ttk.Button(
-            auth_frame, text="OAuth 로그인", command=self.start_oauth_login
+        self.codex_login_button = ttk.Button(
+            auth_frame, text="Codex 로그인", command=self.start_codex_login
         )
-        self.oauth_login_button.pack(side=tk.RIGHT, padx=(8, 0))
+        self.codex_login_button.pack(side=tk.RIGHT, padx=(8, 0))
 
         summary_frame = ttk.LabelFrame(root, text="요약", padding=self.section_padding)
         summary_frame.pack(fill=tk.X, pady=(10, 10))
@@ -223,62 +233,69 @@ class UsageDashboardApp(tk.Tk):
         weekly_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
     def _load_saved_auth_status(self) -> None:
-        token = load_token()
-        if not token:
-            self.login_status_var.set("로그인 상태: 미로그인")
+        status = codex_login_status(timeout_sec=5)
+        if not status.logged_in:
+            self.login_status_var.set("로그인 상태: Codex 미로그인")
             return
-        token_hint = token.get("token_type", "saved").upper()
-        self.login_status_var.set(f"로그인 상태: OAuth 완료 ({token_hint})")
+        self.login_status_var.set(f"로그인 상태: Codex 로그인 완료 ({status.detail})")
 
-    def _set_oauth_login_ui_state(self, in_progress: bool) -> None:
-        self.oauth_login_in_progress = in_progress
+    def _set_codex_login_ui_state(self, in_progress: bool) -> None:
+        self.codex_login_in_progress = in_progress
         if in_progress:
-            self.oauth_login_button.state(["disabled"])
-            self.login_status_var.set("로그인 상태: OAuth 진행 중 (브라우저 확인)")
+            self.codex_login_button.state(["disabled"])
+            self.login_status_var.set("로그인 상태: Codex 로그인 진행 중 (브라우저 확인)")
             return
-        self.oauth_login_button.state(["!disabled"])
+        self.codex_login_button.state(["!disabled"])
 
-    def _poll_oauth_login_result(self) -> None:
+    def _poll_codex_login_result(self) -> None:
         try:
-            result_type, result_value = self.oauth_result_queue.get_nowait()
+            result_type, result_value = self.codex_result_queue.get_nowait()
         except queue.Empty:
-            self.after(200, self._poll_oauth_login_result)
+            self.after(200, self._poll_codex_login_result)
             return
 
-        self._set_oauth_login_ui_state(False)
+        self._set_codex_login_ui_state(False)
         if result_type == "success":
-            self.login_status_var.set(f"로그인 상태: OAuth 완료 ({result_value})")
-            messagebox.showinfo("OAuth", "로그인이 완료되었습니다.")
+            self.login_status_var.set(f"로그인 상태: Codex 로그인 완료 ({result_value})")
+            messagebox.showinfo("Codex 로그인", "Codex 로그인이 완료되었습니다.")
             return
 
-        self.login_status_var.set("로그인 상태: 미로그인")
+        self.login_status_var.set("로그인 상태: Codex 미로그인")
         messagebox.showerror(
-            "OAuth 오류",
+            "Codex 로그인 오류",
             (
                 "로그인에 실패했습니다.\n"
                 f"{result_value}\n\n"
-                "desktop_win/.env.example를 참고해 OAuth 환경변수를 설정해 주세요."
+                "터미널에서 `codex login --device-auth`가 동작하는지 먼저 확인해 주세요."
             ),
         )
 
-    def start_oauth_login(self) -> None:
-        if self.oauth_login_in_progress:
+    def start_codex_login(self) -> None:
+        if self.codex_login_in_progress:
             return
 
-        self._set_oauth_login_ui_state(True)
+        self._set_codex_login_ui_state(True)
 
         def worker() -> None:
             try:
-                settings = OAuthSettings.from_env()
-                client = OAuthPKCEClient(settings)
-                token = client.authenticate(timeout_sec=180)
-                token_hint = token.get("token_type", "saved").upper()
-                self.oauth_result_queue.put(("success", token_hint))
+                status = codex_login_status(timeout_sec=8)
+                if status.logged_in:
+                    self.codex_result_queue.put(("success", status.detail))
+                    return
+
+                login_status = codex_login_device_auth(
+                    timeout_sec=self.codex_login_timeout_sec
+                )
+                if login_status.logged_in:
+                    self.codex_result_queue.put(("success", login_status.detail))
+                    return
+
+                self.codex_result_queue.put(("error", login_status.detail))
             except Exception as exc:  # noqa: BLE001
-                self.oauth_result_queue.put(("error", str(exc)))
+                self.codex_result_queue.put(("error", str(exc)))
 
         threading.Thread(target=worker, daemon=True).start()
-        self.after(200, self._poll_oauth_login_result)
+        self.after(200, self._poll_codex_login_result)
 
     def insert_sample_and_refresh(self) -> None:
         try:
